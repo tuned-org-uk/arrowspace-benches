@@ -72,12 +72,20 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 
 | Job | Runner | Tool | Role |
 |---|---|---|---|
-| `criterion` | ubuntu-latest | criterion (wall-clock) | Advisory. 200% alert threshold — noisy on shared runners, posts a comment but does not fail the job. |
+| `criterion` (×3 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.26.x), pinned `0.26.5`, pinned `0.26.0`. Advisory, 200% threshold. |
+| `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
+
+### Cross-version API rule (IMPORTANT)
+
+Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.0/`). Known gap: `try_prepare_query_item` exists only from 0.26.5 — search benches filter degenerate queries via stored lambdas (`aspace.lambdas()[i].abs() > 1e-12`) instead.
+
+To change which versions are compared, edit the `matrix.version` list in bench.yml and the matching chart dirs + `compare` job arguments; keep the oldest pin compiling.
 
 ### Results persistence
 
-- Trend charts + JSON history → `gh-pages` branch, pushed by `benchmark-action@v1` (`auto-push: true`) under `dev/`.
-- Per-version criterion snapshots → `benches-results/v<arrowspace>/criterion.json` (idempotent; committed to `main` by the `criterion` job).
+- Trend charts + JSON history → `gh-pages`, one dir per leg: `dev/`, `dev-v0.26.5/`, `dev-v0.26.0/`.
+- Cross-version comparison page → `gh-pages/index.html` (published by the `compare` job).
+- Per-version criterion snapshots → `benches-results/v<arrowspace>/criterion.json` (idempotent; committed to `main`; any leg can be first to record a version).
 
 ### Required secrets
 
@@ -122,6 +130,17 @@ gh workflow run bench.yml --repo tuned-org-uk/arrowspace-benches --ref main
 | `spectral` | `multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `build_spectral_laplacian` | n=500 × d=64 |
 
 All datasets come from `benches/common/mod.rs`, seeded with **3407**. Changing the seed invalidates every recorded baseline.
+
+## Python tooling
+
+Scripts under `scripts/` are stdlib-only and run with the CI's system
+python3. Locally, use [`uv`](https://docs.astral.sh/uv/) so no system
+interpreter is polluted:
+
+```bash
+uv run --no-project python scripts/make_compare_page.py \
+  --self-test /tmp/ars-compare-test
+```
 
 ## Code conventions
 

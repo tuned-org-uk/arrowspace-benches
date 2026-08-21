@@ -34,12 +34,13 @@ fn build_index() -> Index {
     let (aspace, gl) = builder().build(rows);
     // Sample queries from the indexed rows: out-of-distribution random
     // vectors can map to no subcentroid and yield a degenerate (~0)
-    // lambda, which makes prepare_query_item panic. Rows whose prepared
-    // lambda is still degenerate are dropped from the pool.
+    // lambda, which makes prepare_query_item panic. Rows whose stored
+    // lambda is degenerate are dropped from the pool.
     let stride = aspace.lambdas().len() / QUERY_POOL;
     let queries: Vec<Vec<f64>> = (0..QUERY_POOL)
-        .map(|i| aspace.get_item(i * stride).item)
-        .filter(|q| aspace.try_prepare_query_item(q, &gl).is_ok())
+        .map(|i| i * stride)
+        .filter(|&i| aspace.lambdas()[i].abs() > 1e-12)
+        .map(|i| aspace.get_item(i).item)
         .collect();
     assert!(!queries.is_empty(), "no query with non-degenerate lambda");
     Index {

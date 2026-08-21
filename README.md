@@ -4,9 +4,9 @@
 
 **Benchmark harness for [arrowspace-rs](https://github.com/tuned-org-uk/arrowspace-rs)** — spectral vector search using graph Laplacian eigenstructure.
 
-Covers the three hot paths of the library — index build, query-time search, and spectral primitives — and wires CI to run them on every published `arrowspace` release.
+Covers the three hot paths of the library — index build, query-time search, and spectral primitives — across three published `arrowspace` versions per run (latest plus two pinned releases), with a side-by-side comparison page.
 
-> **Live trend charts:** ⏱️ [criterion (wall-clock)](https://tuned-org-uk.github.io/arrowspace-benches/dev/) — see [Results](#results) for how to read them.
+> **Live results:** 📊 [cross-version comparison](https://tuned-org-uk.github.io/arrowspace-benches/) · ⏱️ [latest trend chart](https://tuned-org-uk.github.io/arrowspace-benches/dev/) — see [Results](#results) for how to read them.
 
 ## Local run
 
@@ -58,9 +58,22 @@ Queries for search benches are sampled from indexed rows whose prepared lambda i
 
 `.github/workflows/bench.yml` runs on push to this repo's `main`, on `repository_dispatch` from arrowspace-rs (`event_type: arrowspace-release-published`, fired when a release is published), on a nightly cron, and on manual `workflow_dispatch`.
 
+The `criterion` job runs one matrix leg per compared arrowspace version:
+
+| Leg | arrowspace resolution | Trend chart dir |
+|---|---|---|
+| `latest` | crates.io, latest 0.26.x | `dev/` |
+| `v0.26.5` | pinned via `cargo update --precise 0.26.5` | `dev-v0.26.5/` |
+| `v0.26.0` | pinned via `cargo update --precise 0.26.0` | `dev-v0.26.0/` |
+
+Each leg is advisory (200% alert threshold — wall-clock numbers are noisy on shared runners). A fourth `compare` job runs after all legs and publishes the cross-version table at the gh-pages root.
+
+**Cross-version API rule**: bench code must compile against every matrix pin. Do not use APIs absent from the oldest pin — `try_prepare_query_item`, for example, exists only from 0.26.5, so search benches filter degenerate queries via stored lambdas instead.
+
 | Job | Runner | Tool | Role |
 |---|---|---|---|
-| `criterion` | ubuntu-latest | criterion (wall-clock) | Advisory. 200% alert threshold — noisy on shared runners, posts a comment but does not fail the job. |
+| `criterion` (×3 legs) | ubuntu-latest | criterion (wall-clock) | Advisory per version. Posts a comment but does not fail the job. |
+| `compare` | ubuntu-latest | stdlib Python | Renders `index.html` from the three legs' bencher output; pushes to gh-pages root. |
 
 `arrowspace` is resolved from crates.io on every run, so the recorded history tracks the published release. The dispatch payload carries the release commit SHA only for the status-check step, not for checkout.
 
@@ -105,22 +118,26 @@ git checkout main
 
 ## Results
 
-Three places to read results, each answering a different question.
+Four places to read results, each answering a different question.
 
-### 1. Live trend chart (gh-pages)
+### 1. Cross-version comparison (gh-pages root)
 
-<https://tuned-org-uk.github.io/arrowspace-benches/dev/> plots wall-clock ns/iter per bench over time, one series per benchmark name (`build/builder/500x64`, `search/hybrid/50`, …). Wall-clock numbers on shared runners carry 20–60% variance — treat small movements as noise.
+<https://tuned-org-uk.github.io/arrowspace-benches/> — one row per benchmark, one column per arrowspace version, wall-clock ns/iter plus a ratio against the latest release. This answers "did release N get faster or slower than release M?" in one glance. Ratios ≥ ×1.20 render red, ≤ ×0.80 green.
 
-### 2. Per-version criterion snapshots (`benches-results/`)
+### 2. Per-version trend charts (gh-pages)
 
-The `criterion` job records one frozen `criterion.json` per published arrowspace version, committed to `main`: `benches-results/v0.26.10/criterion.json`. This is the point-in-time record of "what the published release measured" — use it to diff two releases against each other rather than tracking the rolling trend. See [`benches-results/README.md`](benches-results/README.md) for the storage contract.
+`dev/`, `dev-v0.26.5/`, `dev-v0.26.0/` each plot wall-clock ns/iter per bench over time for that version line. Use them to answer "is the latest release drifting slower over time?". Wall-clock numbers on shared runners carry 20–60% variance — treat small movements as noise.
 
-### 3. Raw JSON artifacts (per CI run)
+### 3. Per-version criterion snapshots (`benches-results/`)
 
-Each run uploads `criterion-json` → `bench-output/criterion.json` (bencher format):
+The `criterion` job records one frozen `criterion.json` per published arrowspace version, committed to `main`: `benches-results/v0.26.10/criterion.json`. This is the point-in-time record of "what the published release measured". See [`benches-results/README.md`](benches-results/README.md) for the storage contract.
+
+### 4. Raw JSON artifacts (per CI run)
+
+Each leg uploads its bencher output as an artifact (`criterion-json-latest`, `criterion-json-v0.26.5`, `criterion-json-v0.26.0`):
 
 ```bash
-gh run download <run-id> --repo tuned-org-uk/arrowspace-benches -n criterion-json -D ./crit-out
+gh run download <run-id> --repo tuned-org-uk/arrowspace-benches -n criterion-json-latest -D ./crit-out
 ```
 
 ## Contributing

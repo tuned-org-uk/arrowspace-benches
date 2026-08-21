@@ -4,13 +4,16 @@ name: bench
 #   - push to this repo's `main` (harness edits land → re-bench the latest
 #     published arrowspace so the recorded history reflects both halves).
 #   - repository_dispatch from arrowspace-rs
-#     (event_type: arrowspace-release-published), fired when a new release
-#     is published on crates.io / GitHub releases.
+#     (event_type: arrowspace-release-published), fired when a release is
+#     published.
 #   - nightly schedule, so a baseline against the latest published arrowspace
 #     is recorded even when neither repo has recent activity.
 #   - workflow_dispatch (manual rerun).
 #
-# arrowspace is resolved from crates.io (latest 0.26.x) — see Cargo.toml.
+# One matrix leg per compared arrowspace version: `latest` resolves whatever
+# crates.io serves (currently 0.26.x); the other legs pin exact versions via
+# `cargo update --precise`. Each leg charts its own gh-pages directory;
+# the `compare` job then renders a side-by-side table at gh-pages root.
 on:
   push:
     branches: [main]
@@ -26,33 +29,54 @@ concurrency:
   group: bench-${{ github.event_name }}-${{ github.event.client_payload.sha || github.ref || github.run_id }}
   cancel-in-progress: true
 
-# benchmark-action auto-pushes trend history to gh-pages and the snapshot
-# step commits benches-results/ to main; both need contents:write.
+# benchmark-action auto-pushes trend history to gh-pages, the snapshot step
+# commits benches-results/ to main, and the compare job publishes the
+# comparison page; all need contents:write.
 permissions:
   contents: write
 
 jobs:
   criterion:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - pin: ""
+            chart-dir: dev
+            label: latest
+          - pin: 0.26.5
+            chart-dir: dev-v0.26.5
+            label: v0.26.5
+          - pin: 0.26.0
+            chart-dir: dev-v0.26.0
+            label: v0.26.0
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      # Cache key carries the pin so legs never share a target/ built
+      # against a different arrowspace.
       - name: Cache .cargo and target
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo
             ./target
-          key: bench-criterion-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: bench-criterion-
+          key: bench-criterion-${{ matrix.version.label }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: bench-criterion-${{ matrix.version.label }}-
 
       # Compile first so a compile failure fails the job without spending
       # runner minutes on actually running benches.
       - name: Build benches (no-run)
-        run: cargo bench --no-run
+        run: |
+          cargo generate-lockfile
+          if [ -n "${{ matrix.version.pin }}" ]; then
+            cargo update -p arrowspace --precise ${{ matrix.version.pin }}
+          fi
+          cargo bench --no-run
 
       # Run criterion benches. `--output-format bencher` emits one line per
       # bench in the format benchmark-action/github-action-benchmark expects
@@ -66,8 +90,10 @@ jobs:
             --bench build --bench search --bench spectral \
             -- --output-format bencher | tee bench-output/criterion.json
 
-      # Persist the results to the gh-pages branch and generate the trend
-      # page. auto-push: true lets the action commit the JSON directly.
+      # Persist this leg's results to its own gh-pages subdirectory and
+      # generate the trend page. auto-push: true lets the action commit the
+      # JSON directly. Parallel legs can race on the gh-pages ref; the
+      # action re-fetches and retries, and a lost point is advisory-only.
       - name: Store + chart benchmark history
         uses: benchmark-action/github-action-benchmark@v1
         with:
@@ -76,7 +102,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           gh-pages-branch: gh-pages
-          benchmark-data-dir-path: dev
+          benchmark-data-dir-path: ${{ matrix.version.chart-dir }}
           comment-on-alert: true
           # Criterion wall-clock numbers are noisy on GitHub-hosted runners
           # (20-60% variance is normal), so this job is advisory, not a gate.
@@ -86,12 +112,12 @@ jobs:
       - name: Upload criterion.json artifact
         uses: actions/upload-artifact@v4
         with:
-          name: criterion-json
+          name: criterion-json-${{ matrix.version.label }}
           path: bench-output/criterion.json
 
-      # Resolve the exact arrowspace version cargo picked from crates.io
-      # (read from the Cargo.lock the build step generated). Used as the
-      # per-version storage directory name below.
+      # Resolve the exact arrowspace version cargo picked (read from the
+      # Cargo.lock the build step generated). Used as the per-version
+      # storage directory name below.
       - name: Resolve arrowspace version
         id: arsver
         run: |
@@ -152,9 +178,10 @@ jobs:
           exit 1
 
       # Post a status check back to the arrowspace-rs commit that triggered
-      # the run, so that repo can see a benches result for its release.
+      # the run. Only the latest-version leg posts, so a dispatch produces
+      # exactly one status check.
       - name: Post status check back to arrowspace-rs
-        if: github.event_name == 'repository_dispatch'
+        if: matrix.version.pin == '' && github.event_name == 'repository_dispatch'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BENCHES_STATUS_PAT }}
@@ -174,3 +201,41 @@ jobs:
               description: 'Criterion bench run completed (advisory)',
               target_url: runUrl,
             });
+
+  # Render the cross-version comparison page once every leg finished:
+  # one row per benchmark, one column per arrowspace version, wall-clock
+  # ns/iter plus ratio against the latest release. Published at the gh-pages
+  # root so https://tuned-org-uk.github.io/arrowspace-benches/ lands here.
+  compare:
+    needs: criterion
+    if: always() && !cancelled() && !failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download leg artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: criterion-json-*
+          merge-multiple: false
+          path: compare-out
+
+      - name: Build comparison page
+        run: |
+          python3 scripts/make_compare_page.py \
+            --out index.html \
+            "latest=compare-out/criterion-json-latest/criterion.json" \
+            "v0.26.5=compare-out/criterion-json-v0.26.5/criterion.json" \
+            "v0.26.0=compare-out/criterion-json-v0.26.0/criterion.json"
+
+      - name: Publish comparison page to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages
+          git checkout -B gh-pages origin/gh-pages
+          cp index.html ./index.html
+          git add index.html
+          git diff --cached --quiet && echo "page unchanged" && exit 0
+          git commit -m "pages: refresh cross-version comparison [skip ci]"
+          git push origin gh-pages
