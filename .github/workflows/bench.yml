@@ -223,7 +223,7 @@ jobs:
       - name: Build comparison page
         run: |
           python3 scripts/make_compare_page.py \
-            --out index.html \
+            --out compare-out/index.html \
             "latest=compare-out/criterion-json-latest/criterion.json" \
             "v0.26.5=compare-out/criterion-json-v0.26.5/criterion.json" \
             "v0.26.0=compare-out/criterion-json-v0.26.0/criterion.json"
@@ -234,7 +234,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin gh-pages
           git checkout -B gh-pages origin/gh-pages
-          cp index.html ./index.html
+          cp compare-out/index.html ./index.html
           git add index.html
           git diff --cached --quiet && echo "page unchanged" && exit 0
           git commit -m "pages: refresh cross-version comparison [skip ci]"
