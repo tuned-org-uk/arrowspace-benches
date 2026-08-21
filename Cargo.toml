@@ -1,0 +1,43 @@
+[package]
+name = "arrowspace-benches"
+description = "Benches for arrowspace"
+homepage = "https://github.com/tuned-org-uk/arrowspace-rs"
+version = "0.1.0"
+authors = ["Lorenzo <tunedconsulting@gmail.com>"]
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+documentation = "https://docs.rs/arrowspace"
+repository = "https://github.com/tuned-org-uk/arrowspace-benches"
+readme = "README.md"
+keywords = ["vector-search", "spectral-analysis", "benchmark", "criterion"]
+categories = ["science"]
+
+[dependencies]
+# CI resolves arrowspace from crates.io (`version = "0.26"` pulls the latest
+# 0.26.x release).
+#
+# For local dev against a sibling arrowspace-rs checkout, temporarily swap
+# this line for: arrowspace = { path = "../arrowspace-rs" }
+arrowspace = "0.26"
+# Dependency versions mirror arrowspace-rs's Cargo.toml so cargo unifies a
+# single version of each across the graph.
+rand = "0.10"
+rand_chacha = "0.10"
+
+# Bench harness: criterion wall-clock + statistics (local + CI).
+[dependencies.criterion]
+version = "0.8"
+default-features = false
+
+[[bench]]
+name = "build"
+harness = false
+
+[[bench]]
+name = "search"
+harness = false
+
+[[bench]]
+name = "spectral"
+harness = false
