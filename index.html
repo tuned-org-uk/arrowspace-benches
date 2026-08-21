@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arrowspace-benches &mdash; cross-version comparison</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: -apple-system, 'Segoe UI', sans-serif;
+       margin: 2rem auto; max-width: 72rem; padding: 0 1rem; }
+h1 { font-size: 1.4rem; } h2 { font-size: 1.05rem; margin-top: 2rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th, td { border-bottom: 1px solid #8884; padding: 0.35rem 0.7rem;
+         text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left;
+                                 font-family: ui-monospace, monospace; }
+thead th { border-bottom: 2px solid #8886; }
+td.ratio { font-family: ui-monospace, monospace; }
+.regression { color: #d9534f; } .improvement { color: #2e9e5b; }
+.muted { opacity: 0.55; }
+nav a { margin-right: 1.2rem; }
+footer { margin-top: 2rem; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<h1>arrowspace-benches &mdash; cross-version comparison</h1>
+<nav><a href='dev/'>latest trend</a> <a href='dev-v0.26.5/'>v0.26.5 trend</a> <a href='dev-v0.26.0/'>v0.26.0 trend</a></nav>
+<h2>Wall-clock ns/iter, lower is better (latest = baseline)</h2>
+<table>
+<thead><tr><th>Benchmark</th><th>latest</th><th>v0.26.5</th><th>v0.26.0</th><th>v0.26.5 / latest</th><th>v0.26.0 / latest</th></tr></thead>
+<tbody><tr><td>build/builder/200x16</td><td title='+/- 1.68 ms'>28.69 ms</td><td title='+/- 1.71 ms'>40.12 ms</td><td title='+/- 1.61 ms'>35.49 ms</td><td class='ratio regression'>x1.40</td><td class='ratio regression'>x1.24</td></tr><tr><td>build/builder/200x64</td><td title='+/- 2.75 ms'>75.90 ms</td><td title='+/- 2.84 ms'>120.19 ms</td><td title='+/- 3.78 ms'>107.66 ms</td><td class='ratio regression'>x1.58</td><td class='ratio regression'>x1.42</td></tr><tr><td>build/builder/500x16</td><td title='+/- 6.68 ms'>185.61 ms</td><td title='+/- 4.34 ms'>257.56 ms</td><td title='+/- 4.48 ms'>261.48 ms</td><td class='ratio regression'>x1.39</td><td class='ratio regression'>x1.41</td></tr><tr><td>build/builder/500x64</td><td title='+/- 19.39 ms'>531.74 ms</td><td title='+/- 9.88 ms'>790.09 ms</td><td title='+/- 9.62 ms'>748.17 ms</td><td class='ratio regression'>x1.49</td><td class='ratio regression'>x1.41</td></tr><tr><td>search/hybrid/10</td><td title='+/- 5.14 us'>169.65 us</td><td title='+/- 4.13 us'>239.41 us</td><td title='+/- 5.58 us'>224.51 us</td><td class='ratio regression'>x1.41</td><td class='ratio regression'>x1.32</td></tr><tr><td>search/hybrid/50</td><td title='+/- 2.42 us'>184.16 us</td><td title='+/- 4.47 us'>260.49 us</td><td title='+/- 3.13 us'>245.61 us</td><td class='ratio regression'>x1.41</td><td class='ratio regression'>x1.33</td></tr><tr><td>search/lambda_aware/10</td><td title='+/- 11.46 us'>210.27 us</td><td title='+/- 8.44 us'>366.55 us</td><td title='+/- 8.41 us'>348.68 us</td><td class='ratio regression'>x1.74</td><td class='ratio regression'>x1.66</td></tr><tr><td>search/lambda_aware/50</td><td title='+/- 2.94 us'>208.08 us</td><td title='+/- 10.12 us'>364.64 us</td><td title='+/- 9.62 us'>347.94 us</td><td class='ratio regression'>x1.75</td><td class='ratio regression'>x1.67</td></tr><tr><td>search/linear_sorted/10</td><td title='+/- 2.83 us'>65.65 us</td><td title='+/- 1.42 us'>103.36 us</td><td title='+/- 1.58 us'>87.53 us</td><td class='ratio regression'>x1.57</td><td class='ratio regression'>x1.33</td></tr><tr><td>search/linear_sorted/50</td><td title='+/- 1.41 us'>65.07 us</td><td title='+/- 1.35 us'>104.58 us</td><td title='+/- 1.18 us'>86.39 us</td><td class='ratio regression'>x1.61</td><td class='ratio regression'>x1.33</td></tr><tr><td>search/prepare_query_item</td><td title='+/- 3.92 us'>66.64 us</td><td title='+/- 2.90 us'>102.38 us</td><td title='+/- 2.88 us'>82.90 us</td><td class='ratio regression'>x1.54</td><td class='ratio regression'>x1.24</td></tr><tr><td>search/range_search</td><td title='+/- 3.55 us'>160.53 us</td><td title='+/- 13.65 us'>267.59 us</td><td title='+/- 15.01 us'>253.72 us</td><td class='ratio regression'>x1.67</td><td class='ratio regression'>x1.58</td></tr><tr><td>spectral/build_spectral_laplacian</td><td title='+/- 128.37 us'>3.08 ms</td><td title='+/- 107.32 us'>6.35 ms</td><td title='+/- 79.30 us'>6.43 ms</td><td class='ratio regression'>x2.06</td><td class='ratio regression'>x2.09</td></tr><tr><td>spectral/multiply_vector</td><td title='+/- 32 ns'>443 ns</td><td title='+/- 4 ns'>675 ns</td><td title='+/- 3 ns'>653 ns</td><td class='ratio regression'>x1.52</td><td class='ratio regression'>x1.47</td></tr><tr><td>spectral/rayleigh_quotient</td><td title='+/- 52 ns'>468 ns</td><td title='+/- 4 ns'>755 ns</td><td title='+/- 2 ns'>732 ns</td><td class='ratio regression'>x1.61</td><td class='ratio regression'>x1.56</td></tr><tr><td>spectral/taumode_lambdas_parallel/200x16</td><td title='+/- 23.39 us'>278.69 us</td><td title='+/- 12.57 us'>414.44 us</td><td title='+/- 13.87 us'>346.17 us</td><td class='ratio regression'>x1.49</td><td class='ratio regression'>x1.24</td></tr><tr><td>spectral/taumode_lambdas_parallel/500x64</td><td title='+/- 206.25 us'>6.91 ms</td><td title='+/- 166.77 us'>11.45 ms</td><td title='+/- 133.24 us'>8.27 ms</td><td class='ratio regression'>x1.66</td><td class='ratio'>x1.20</td></tr>
+</tbody>
+</table>
+<footer>Generated by <code>scripts/make_compare_page.py</code> from
+criterion bencher output on GitHub-hosted runners; expect 20&ndash;60%
+run-to-run noise. Per-release snapshots live under
+<code>benches-results/</code> on <code>main</code>.</footer>
+</body>
+</html>
