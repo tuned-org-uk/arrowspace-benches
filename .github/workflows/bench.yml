@@ -26,6 +26,11 @@ concurrency:
   group: bench-${{ github.event_name }}-${{ github.event.client_payload.sha || github.ref || github.run_id }}
   cancel-in-progress: true
 
+# benchmark-action auto-pushes trend history to gh-pages and the snapshot
+# step commits benches-results/ to main; both need contents:write.
+permissions:
+  contents: write
+
 jobs:
   criterion:
     runs-on: ubuntu-latest
