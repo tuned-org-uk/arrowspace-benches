@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787328312996,
+  "lastUpdate": 1787328322079,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -123,6 +123,132 @@ window.BENCHMARK_DATA = {
             "name": "spectral/build_spectral_laplacian",
             "value": 4095164,
             "range": "± 129122",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "committer": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "distinct": true,
+          "id": "85361ffb43fa212d36db4d56b5cd85fbddb8108b",
+          "message": "ci: grant contents:write for gh-pages and snapshot pushes",
+          "timestamp": "2026-08-21T16:56:51+01:00",
+          "tree_id": "03766255e4fb1a04048b3d7a21a6687ed3267a10",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/85361ffb43fa212d36db4d56b5cd85fbddb8108b"
+        },
+        "date": 1787328321557,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "build/builder/200x16",
+            "value": 41846481,
+            "range": "± 926644",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/200x64",
+            "value": 123772717,
+            "range": "± 2369859",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/500x16",
+            "value": 270638646,
+            "range": "± 4041345",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/500x64",
+            "value": 822306145,
+            "range": "± 12077674",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/lambda_aware/10",
+            "value": 368422,
+            "range": "± 14982",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/hybrid/10",
+            "value": 230880,
+            "range": "± 3077",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/linear_sorted/10",
+            "value": 92285,
+            "range": "± 1691",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/lambda_aware/50",
+            "value": 370206,
+            "range": "± 9518",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/hybrid/50",
+            "value": 249175,
+            "range": "± 3668",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/linear_sorted/50",
+            "value": 92255,
+            "range": "± 1821",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/range_search",
+            "value": 262421,
+            "range": "± 8437",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/prepare_query_item",
+            "value": 91923,
+            "range": "± 889",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/multiply_vector",
+            "value": 685,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/rayleigh_quotient",
+            "value": 755,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/taumode_lambdas_parallel/200x16",
+            "value": 343177,
+            "range": "± 15655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/taumode_lambdas_parallel/500x64",
+            "value": 8258198,
+            "range": "± 105494",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/build_spectral_laplacian",
+            "value": 6004180,
+            "range": "± 41627",
             "unit": "ns/iter"
           }
         ]
