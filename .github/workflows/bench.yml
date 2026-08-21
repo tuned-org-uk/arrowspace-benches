@@ -87,7 +87,7 @@ jobs:
           set -o pipefail
           mkdir -p bench-output
           cargo bench \
-            --bench build --bench search --bench spectral \
+            --bench build --bench search --bench spectral --bench scale --bench cve \
             -- --output-format bencher | tee bench-output/criterion.json
 
       # Persist this leg's results to its own gh-pages subdirectory and

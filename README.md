@@ -39,6 +39,12 @@ All datasets are synthetic clustered vectors in $[0,1]^d$, generated determinist
 | `build` | `ArrowSpaceBuilder::build` — kNN feature graph + Laplacian + λτ synthesis | n ∈ {200, 500} × d ∈ {16, 64} |
 | `search` | `search_lambda_aware`, `search_lambda_aware_hybrid`, `search_linear_sorted`, `range_search`, `prepare_query_item` | n=500 × d=64, k ∈ {10, 50}, α=0.5 |
 | `spectral` | `GraphLaplacian::multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `GraphFactory::build_spectral_laplacian` | n=500 × d=64 |
+| `scale` | Full hot-path set at production scale: build, all search ops, spectral primitives | n=80_000 × d=64, k ∈ {10, 50}, α=0.5 |
+| `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20, α=0.5 |
+
+The `scale` bench runs each group with `sample_size(10)` and capped warm-up/measurement times to keep CI bounded; criterion prints an expected "unable to complete 10 samples" notice for `scale/build` (one iteration ≈ 4 s). `scale_probe` (`cargo run --release --example scale_probe`) times one full-size build and prints graph health stats before you trust any `scale` result.
+
+The `cve` bench mimics the CVE-search database benchmark from pyarrowspace and the JOSS paper: CVE records 2018-2025 embedded with an all-MiniLM-L6-v2 fine-tune become clustered 384-feature vectors, searched with the reference graph parameters from `pyarrowspace/tests/test_8_CVE_db_sweep.py` (`eps=1.31, k=25, topk=15, p=2.0, sigma=0.535`) and k=20 results. One index build ≈ 190 s on a fast laptop, so the `cve` leg is the long pole in CI (~40-60 min). Validate this distribution with `cve_probe` (`cargo run --release --example cve_probe`).
 
 ### The eps trap (read before adding benches)
 

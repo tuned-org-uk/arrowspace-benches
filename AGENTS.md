@@ -49,6 +49,12 @@ Before trusting any benchmark result on new data generation or builder parameter
 cargo run --release --example graph_sanity
 ```
 
+For the production-scale distribution (`benches/scale.rs`), use the scale probe instead — it times one full-size build too:
+
+```bash
+cargo run --release --example scale_probe
+```
+
 A healthy row has `nnz >> dim` and `zeros ≤ 1`. Search benches sample queries from indexed rows whose prepared lambda is non-degenerate — out-of-distribution random queries can panic in `prepare_query_item`.
 
 ## Lint and format (enforced in CI)
@@ -128,6 +134,12 @@ gh workflow run bench.yml --repo tuned-org-uk/arrowspace-benches --ref main
 | `build` | `ArrowSpaceBuilder::build` | n ∈ {200, 500} × d ∈ {16, 64} |
 | `search` | `search_lambda_aware`, `search_lambda_aware_hybrid`, `search_linear_sorted`, `range_search`, `prepare_query_item` | n=500 × d=64, k ∈ {10, 50} |
 | `spectral` | `multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `build_spectral_laplacian` | n=500 × d=64 |
+| `scale` | Full hot-path set at production scale | n=80_000 × d=64, k ∈ {10, 50} |
+| `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20 |
+
+The `scale` bench caps criterion at `sample_size(10)` + short warm-up/measurement to keep CI bounded; the "unable to complete 10 samples" notice for `scale/build` is expected (one build ≈ 4 s locally). `examples/scale_probe.rs` times one full-size build and prints graph health before trusting a `scale` result.
+
+The `cve` bench uses the graph parameters from `pyarrowspace/tests/test_8_CVE_db_sweep.py` (`eps=1.31, k=25, topk=15, p=2.0, sigma=0.535`) on clustered 384-feature data mimicking MiniLM embeddings. It is the long pole in CI: one build ≈ 190 s locally (several times that on runners), so the whole `cve` leg takes ~40-60 min; matrix legs run in parallel. `examples/cve_probe.rs` validates graph health for this distribution.
 
 All datasets come from `benches/common/mod.rs`, seeded with **3407**. Changing the seed invalidates every recorded baseline.
 
