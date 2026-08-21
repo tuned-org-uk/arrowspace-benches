@@ -1,0 +1,20 @@
+test build/builder/200x16 ... bench:  24,121,101 ns/iter (+/- 1,195,143)
+test build/builder/200x64 ... bench:  77,391,345 ns/iter (+/- 2,754,857)
+test build/builder/500x16 ... bench: 155,515,857 ns/iter (+/- 5,593,691)
+test build/builder/500x64 ... bench: 513,125,348 ns/iter (+/- 9,852,071)
+
+test search/lambda_aware/10 ... bench:     193,143 ns/iter (+/- 21,409)
+test search/hybrid/10 ... bench:     131,800 ns/iter (+/- 2,601)
+test search/linear_sorted/10 ... bench:      63,769 ns/iter (+/- 1,593)
+test search/lambda_aware/50 ... bench:     192,268 ns/iter (+/- 7,688)
+test search/hybrid/50 ... bench:     145,128 ns/iter (+/- 3,235)
+test search/linear_sorted/50 ... bench:      62,355 ns/iter (+/- 1,467)
+test search/range_search ... bench:     154,546 ns/iter (+/- 5,044)
+test search/prepare_query_item ... bench:      64,024 ns/iter (+/- 3,925)
+
+test spectral/multiply_vector ... bench:         308 ns/iter (+/- 9)
+test spectral/rayleigh_quotient ... bench:         331 ns/iter (+/- 9)
+test spectral/taumode_lambdas_parallel/200x16 ... bench:     247,871 ns/iter (+/- 9,198)
+test spectral/taumode_lambdas_parallel/500x64 ... bench:   6,763,853 ns/iter (+/- 287,004)
+test spectral/build_spectral_laplacian ... bench:   3,762,901 ns/iter (+/- 253,113)
+
