@@ -69,12 +69,12 @@ The `criterion` job runs one matrix leg per compared arrowspace version:
 | Leg | arrowspace resolution | Trend chart dir |
 |---|---|---|
 | `latest` | crates.io, latest 0.26.x | `dev/` |
-| `v0.26.5` | pinned via `cargo update --precise 0.26.5` | `dev-v0.26.5/` |
-| `v0.26.0` | pinned via `cargo update --precise 0.26.0` | `dev-v0.26.0/` |
+| `v0.26.12` | pinned via `cargo update --precise 0.26.12` | `dev-v0.26.12/` |
+| `v0.26.11` | pinned via `cargo update --precise 0.26.11` | `dev-v0.26.11/` |
 
 Each leg is advisory (200% alert threshold — wall-clock numbers are noisy on shared runners). A fourth `compare` job runs after all legs and publishes the cross-version table at the gh-pages root.
 
-**Cross-version API rule**: bench code must compile against every matrix pin. Do not use APIs absent from the oldest pin — `try_prepare_query_item`, for example, exists only from 0.26.5, so search benches filter degenerate queries via stored lambdas instead.
+**Cross-version API rule**: bench code must compile against every matrix pin. Do not use APIs absent from the oldest pin — `try_prepare_query_item`, for example, appeared after early 0.26 releases, so search benches filter degenerate queries via stored lambdas instead.
 
 | Job | Runner | Tool | Role |
 |---|---|---|---|
@@ -132,7 +132,7 @@ Four places to read results, each answering a different question.
 
 ### 2. Per-version trend charts (gh-pages)
 
-`dev/`, `dev-v0.26.5/`, `dev-v0.26.0/` each plot wall-clock ns/iter per bench over time for that version line. Use them to answer "is the latest release drifting slower over time?". Wall-clock numbers on shared runners carry 20–60% variance — treat small movements as noise.
+`dev/`, `dev-v0.26.12/`, `dev-v0.26.11/` each plot wall-clock ns/iter per bench over time for that version line. Use them to answer "is the latest release drifting slower over time?". Wall-clock numbers on shared runners carry 20–60% variance — treat small movements as noise.
 
 ### 3. Per-version criterion snapshots (`benches-results/`)
 
@@ -140,7 +140,7 @@ The `criterion` job records one frozen `criterion.json` per published arrowspace
 
 ### 4. Raw JSON artifacts (per CI run)
 
-Each leg uploads its bencher output as an artifact (`criterion-json-latest`, `criterion-json-v0.26.5`, `criterion-json-v0.26.0`):
+Each leg uploads its bencher output as an artifact (`criterion-json-latest`, `criterion-json-v0.26.12`, `criterion-json-v0.26.11`):
 
 ```bash
 gh run download <run-id> --repo tuned-org-uk/arrowspace-benches -n criterion-json-latest -D ./crit-out

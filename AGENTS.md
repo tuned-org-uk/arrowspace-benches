@@ -78,18 +78,18 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 
 | Job | Runner | Tool | Role |
 |---|---|---|---|
-| `criterion` (×3 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.26.x), pinned `0.26.5`, pinned `0.26.0`. Advisory, 200% threshold. |
+| `criterion` (×3 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.26.x), pinned `0.26.12`, pinned `0.26.11`. Advisory, 200% threshold. |
 | `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
 
 ### Cross-version API rule (IMPORTANT)
 
-Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.0/`). Known gap: `try_prepare_query_item` exists only from 0.26.5 — search benches filter degenerate queries via stored lambdas (`aspace.lambdas()[i].abs() > 1e-12`) instead.
+Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.11/`). Historical gap: `try_prepare_query_item` postdates early 0.26 releases — search benches filter degenerate queries via stored lambdas (`aspace.lambdas()[i].abs() > 1e-12`) instead, which stays valid on every pin.
 
 To change which versions are compared, edit the `matrix.version` list in bench.yml and the matching chart dirs + `compare` job arguments; keep the oldest pin compiling.
 
 ### Results persistence
 
-- Trend charts + JSON history → `gh-pages`, one dir per leg: `dev/`, `dev-v0.26.5/`, `dev-v0.26.0/`.
+- Trend charts + JSON history → `gh-pages`, one dir per leg: `dev/`, `dev-v0.26.12/`, `dev-v0.26.11/`.
 - Cross-version comparison page → `gh-pages/index.html` (published by the `compare` job).
 - Per-version criterion snapshots → `benches-results/v<arrowspace>/criterion.json` (idempotent; committed to `main`; any leg can be first to record a version).
 

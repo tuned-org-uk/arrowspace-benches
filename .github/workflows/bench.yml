@@ -45,12 +45,12 @@ jobs:
           - pin: ""
             chart-dir: dev
             label: latest
-          - pin: 0.26.5
-            chart-dir: dev-v0.26.5
-            label: v0.26.5
-          - pin: 0.26.0
-            chart-dir: dev-v0.26.0
-            label: v0.26.0
+          - pin: 0.26.12
+            chart-dir: dev-v0.26.12
+            label: v0.26.12
+          - pin: 0.26.11
+            chart-dir: dev-v0.26.11
+            label: v0.26.11
     steps:
       - uses: actions/checkout@v4
 
@@ -225,8 +225,8 @@ jobs:
           python3 scripts/make_compare_page.py \
             --out compare-out/index.html \
             "latest=compare-out/criterion-json-latest/criterion.json" \
-            "v0.26.5=compare-out/criterion-json-v0.26.5/criterion.json" \
-            "v0.26.0=compare-out/criterion-json-v0.26.0/criterion.json"
+            "v0.26.12=compare-out/criterion-json-v0.26.12/criterion.json" \
+            "v0.26.11=compare-out/criterion-json-v0.26.11/criterion.json"
 
       - name: Publish comparison page to gh-pages
         run: |
