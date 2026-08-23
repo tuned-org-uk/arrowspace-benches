@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787481991141,
+  "lastUpdate": 1787510043994,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -1537,6 +1537,270 @@ window.BENCHMARK_DATA = {
             "name": "spectral/build_spectral_laplacian",
             "value": 3138221,
             "range": "± 98007",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "committer": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "distinct": true,
+          "id": "94f8bbf64d80e777cfbaf707d8080cfc08349853",
+          "message": "ci: compare pins v0.26.12 / v0.26.11, drop v0.26.5 / v0.26.0",
+          "timestamp": "2026-08-23T15:00:06+01:00",
+          "tree_id": "8de1d4954acff4eb4919c89ea4fe9934b76e1087",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/94f8bbf64d80e777cfbaf707d8080cfc08349853"
+        },
+        "date": 1787510043021,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "build/builder/200x16",
+            "value": 42809018,
+            "range": "± 1972679",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/200x64",
+            "value": 126295997,
+            "range": "± 2742993",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/500x16",
+            "value": 282072139,
+            "range": "± 5383207",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/500x64",
+            "value": 876960322,
+            "range": "± 12956385",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/build/300000x384",
+            "value": 1097998784774,
+            "range": "± 3210667680",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/lambda_aware/20",
+            "value": 740032320,
+            "range": "± 16317731",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/hybrid/20",
+            "value": 296800335,
+            "range": "± 1095274",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/linear_sorted/20",
+            "value": 2776965,
+            "range": "± 80449",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/range_search",
+            "value": 391006678,
+            "range": "± 6290138",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/prepare_query_item",
+            "value": 1694591,
+            "range": "± 11723",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/multiply_vector",
+            "value": 3728,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/rayleigh_quotient",
+            "value": 4416,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/build_spectral_laplacian/300000x384",
+            "value": 453022040,
+            "range": "± 3052012",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/taumode_lambdas_parallel/300000x384",
+            "value": 203988607077,
+            "range": "± 107594614",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/build/80000x64",
+            "value": 26954763430,
+            "range": "± 250941390",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/lambda_aware/10",
+            "value": 37781754,
+            "range": "± 86068",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/hybrid/10",
+            "value": 14944417,
+            "range": "± 127485",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/linear_sorted/10",
+            "value": 194702,
+            "range": "± 9419",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/lambda_aware/50",
+            "value": 37542167,
+            "range": "± 54551",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/hybrid/50",
+            "value": 15025198,
+            "range": "± 45571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/linear_sorted/50",
+            "value": 194364,
+            "range": "± 25083",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/range_search",
+            "value": 23928723,
+            "range": "± 245231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/prepare_query_item",
+            "value": 93050,
+            "range": "± 392",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/multiply_vector",
+            "value": 400,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/rayleigh_quotient",
+            "value": 469,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/build_spectral_laplacian/80000x64",
+            "value": 2777598,
+            "range": "± 37464",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/taumode_lambdas_parallel/80000x64",
+            "value": 1487310393,
+            "range": "± 1795385",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/lambda_aware/10",
+            "value": 342629,
+            "range": "± 13707",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/hybrid/10",
+            "value": 232097,
+            "range": "± 1826",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/linear_sorted/10",
+            "value": 96726,
+            "range": "± 1718",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/lambda_aware/50",
+            "value": 347117,
+            "range": "± 11526",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/hybrid/50",
+            "value": 250095,
+            "range": "± 3382",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/linear_sorted/50",
+            "value": 96688,
+            "range": "± 1781",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/range_search",
+            "value": 249140,
+            "range": "± 10910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/prepare_query_item",
+            "value": 91709,
+            "range": "± 2530",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/multiply_vector",
+            "value": 419,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/rayleigh_quotient",
+            "value": 557,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/taumode_lambdas_parallel/200x16",
+            "value": 364962,
+            "range": "± 19256",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/taumode_lambdas_parallel/500x64",
+            "value": 9665972,
+            "range": "± 165475",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/build_spectral_laplacian",
+            "value": 2856920,
+            "range": "± 101943",
             "unit": "ns/iter"
           }
         ]
