@@ -202,6 +202,155 @@ jobs:
               target_url: runUrl,
             });
 
+  # Deterministic instruction-count gate. Linux-only (Valgrind). Counts retired
+  # instructions, which are machine-independent, so a tight alert threshold is
+  # safe even on GitHub-hosted runners. This is the job that can fail a merge.
+  # Runs against the latest published arrowspace (no matrix pinning): the gate
+  # guards the current release, which is what the nightly + release-dispatch
+  # runs measure. The iai benches mirror the build/search/spectral hot paths at
+  # the small end of the criterion grid (Valgrind is ~50x slower than native).
+  iai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Cache .cargo and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo
+            ./target
+          key: bench-iai-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: bench-iai-
+
+      # Compile first so Cargo.lock exists (it's gitignored — not committed),
+      # and a compile failure fails the job without spending runner minutes
+      # on installing the runner or running Valgrind. The runner binary is
+      # only needed at run time, not to build the bench crate.
+      - name: Build iai benches (no-run)
+        run: cargo bench --no-run --bench iai_build --bench iai_search --bench iai_spectral
+
+      # iai-callgrind 0.14 splits the runtime into a separate
+      # `iai-callgrind-runner` binary that `cargo bench` does NOT install.
+      # Without it the bench binary fails with "No such file or directory
+      # (os error 2)". Install the runner at the version Cargo.lock pins
+      # (must match the `iai-callgrind` lib dep). The `if ! command -v` guard
+      # skips the ~1m install when the cache already restored the binary.
+      - name: Install iai-callgrind-runner
+        run: |
+          if command -v iai-callgrind-runner >/dev/null 2>&1; then
+            echo "::notice::iai-callgrind-runner already on PATH; skipping install"
+            exit 0
+          fi
+          ver=$(grep -A1 '^name = "iai-callgrind-runner"$' Cargo.lock | grep version | sed -E 's/version = "([^"]+)".*/\1/')
+          if [ -z "$ver" ]; then
+            echo "::error::could not resolve iai-callgrind-runner version from Cargo.lock" >&2
+            exit 1
+          fi
+          echo "::notice::Installing iai-callgrind-runner v$ver"
+          cargo install iai-callgrind-runner --version "$ver" --locked
+
+      # Run each iai bench. iai-callgrind's `--output-format=json` emits one
+      # BenchmarkSummary object per benchmark line on stdout (NDJSON); we
+      # append every bench crate's output into one iai.ndjson so the adapter
+      # below sees the whole suite as a single stream.
+      - name: Run iai-callgrind benchmarks
+        run: |
+          mkdir -p bench-output
+          : > bench-output/iai.ndjson
+          for b in iai_build iai_search iai_spectral; do
+            echo "::group::running $b"
+            cargo bench --bench "$b" -- --output-format=json >> bench-output/iai.ndjson
+            echo "::endgroup::"
+          done
+
+      # Convert the NDJSON (one BenchmarkSummary per line) into the JSON
+      # array benchmark-action's `customSmallerIsBetter` tool expects:
+      # [{"name","unit":"Instructions","value"}] projecting the Ir (instructions
+      # retired) `Left`/`Both[0]` metric. The adapter is stdlib-only Python.
+      - name: Convert iai NDJSON to benchmark-action array
+        run: python3 scripts/iai_to_benchmark_action.py bench-output/iai.ndjson bench-output/iai.json
+
+      # iai-callgrind emits instruction counts (smaller = better), which
+      # benchmark-action's `customSmallerIsBetter` tool shape accepts. The
+      # action's v1 API does not have a dedicated `iai-callgrind` tool key,
+      # so we map the JSON through the custom-smaller path. Instruction
+      # counts are deterministic → a tight threshold is safe, and a >20%
+      # regression fails the job (and the status check posted below).
+      - name: Store + chart iai benchmark history
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: customSmallerIsBetter
+          output-file-path: bench-output/iai.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: iai-dev
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-threshold: "120%"
+
+      - name: Upload iai JSON artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iai-json
+          path: |
+            bench-output/iai.ndjson
+            bench-output/iai.json
+
+      # Post a pass/fail status check back to the arrowspace-rs commit. Runs on
+      # both success and failure so branch protection sees the real outcome.
+      - name: Post success status check back to arrowspace-rs
+        if: success() && github.event_name == 'repository_dispatch'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BENCHES_STATUS_PAT }}
+          script: |
+            const sha = context.payload.client_payload.sha;
+            if (!sha) {
+              core.warning('no client_payload.sha — skipping status check');
+              return;
+            }
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.repos.createCommitStatus({
+              owner: 'tuned-org-uk',
+              repo: 'arrowspace-rs',
+              sha,
+              state: 'success',
+              context: 'arrowspace-benches / iai-callgrind',
+              description: 'iai-callgrind instruction counts within threshold',
+              target_url: runUrl,
+            });
+
+      - name: Post failure status check back to arrowspace-rs
+        if: failure() && github.event_name == 'repository_dispatch'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BENCHES_STATUS_PAT }}
+          script: |
+            const sha = context.payload.client_payload.sha;
+            if (!sha) {
+              core.warning('no client_payload.sha — skipping status check');
+              return;
+            }
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.repos.createCommitStatus({
+              owner: 'tuned-org-uk',
+              repo: 'arrowspace-rs',
+              sha,
+              state: 'failure',
+              context: 'arrowspace-benches / iai-callgrind',
+              description: 'iai-callgrind regression detected (>20% on an instruction count)',
+              target_url: runUrl,
+            });
+
   # Render the cross-version comparison page once every leg finished:
   # one row per benchmark, one column per arrowspace version, wall-clock
   # ns/iter plus ratio against the latest release. Published at the gh-pages

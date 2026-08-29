@@ -30,6 +30,11 @@ rand_chacha = "0.10"
 version = "0.8"
 default-features = false
 
+# Deterministic instruction-count gate (Linux/Valgrind only). The separate
+# runner binary is not auto-installed by cargo bench — see AGENTS.md.
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+iai-callgrind = "0.14"
+
 [[bench]]
 name = "build"
 harness = false
@@ -48,4 +53,16 @@ harness = false
 
 [[bench]]
 name = "cve"
+harness = false
+
+[[bench]]
+name = "iai_build"
+harness = false
+
+[[bench]]
+name = "iai_search"
+harness = false
+
+[[bench]]
+name = "iai_spectral"
 harness = false

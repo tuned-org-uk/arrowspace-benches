@@ -79,6 +79,7 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 | Job | Runner | Tool | Role |
 |---|---|---|---|
 | `criterion` (×3 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.26.x), pinned `0.26.12`, pinned `0.26.11`. Advisory, 200% threshold. |
+| `iai` | ubuntu-latest | iai-callgrind (instruction count) | Deterministic gate. 120% alert threshold, `fail-on-alert: true`. Runs `latest` only (no matrix pinning). Posts a `success`/`failure` status check back to arrowspace-rs. |
 | `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
 
 ### Cross-version API rule (IMPORTANT)
@@ -89,9 +90,39 @@ To change which versions are compared, edit the `matrix.version` list in bench.y
 
 ### Results persistence
 
-- Trend charts + JSON history → `gh-pages`, one dir per leg: `dev/`, `dev-v0.26.12/`, `dev-v0.26.11/`.
+- Trend charts + JSON history → `gh-pages`: criterion `dev/`, `dev-v0.26.12/`, `dev-v0.26.11/`; iai-callgrind `iai-dev/`.
 - Cross-version comparison page → `gh-pages/index.html` (published by the `compare` job).
 - Per-version criterion snapshots → `benches-results/v<arrowspace>/criterion.json` (idempotent; committed to `main`; any leg can be first to record a version).
+
+## iai-callgrind — the runner binary (IMPORTANT)
+
+`iai-callgrind` 0.14 split the runtime into a **separate `iai-callgrind-runner` binary** that is *not* auto-installed by `cargo bench`. `cargo install iai-callgrind` installs the **library crate** only; the runner is its own published crate `iai-callgrind-runner` (see `Cargo.lock`). Symptom when the runner is missing:
+
+```
+iai-callgrind: Error: Failed to run benchmarks: No such file or directory (os error 2).
+Is iai-callgrind-runner installed and iai-callgrind-runner in your $PATH?
+```
+
+`cargo bench --no-run` compiles the bench crate but does **not** install the runner. Bench binaries then exec `iai-callgrind-runner` from `$PATH` at run time and fail immediately — no callgrind run happens, no JSON is produced. Fix locally / in CI:
+
+```bash
+# Install the runner at the version Cargo.lock pins (must match the lib dep).
+cargo install iai-callgrind-runner --version 0.14.2 --locked
+# Or point the env var at a known binary path:
+export IAI_CALLGRIND_RUNNER=/path/to/iai-callgrind-runner
+```
+
+Valgrind itself also needs installing on Linux: `sudo apt-get update && sudo apt-get install -y valgrind`.
+
+### iai-callgrind `--output-format=json` semantics (IMPORTANT)
+
+`iai-callgrind` 0.14's `--output-format=json` prints one **`BenchmarkSummary` object per benchmark line** on stdout (NDJSON — one JSON document per line; *not* a JSON array). The instruction count lives at **`callgrind_summary.callgrind_run.total.summary.Ir.metrics`** (*not* `events.Ir.metrics` — `events` is per-segment). `metrics` is an `EitherOrBoth_for_uint64`:
+
+- `{"Left": n}` — new-only (first run, no prior baseline on disk)
+- `{"Right": o}` — old-only (degenerate; the new run produced nothing)
+- `{"Both": [n, o]}` — new `n` and old `o`; project `n` = `Both[0]` for the current value
+
+`benchmark-action/github-action-benchmark@v1` has **no `iai-callgrind` tool key**, so the `iai` CI job maps iai output through `tool: customSmallerIsBetter`, which expects a JSON **array** of entries shaped `{"name", "unit", "value"}`. The NDJSON→array conversion is done by `scripts/iai_to_benchmark_action.py` (stdlib-only; run its `--self-test` locally with `uv run --no-project python scripts/iai_to_benchmark_action.py --self-test /tmp/ars-iai-test`). It projects each summary's `module_path` (or `function_name`) → `name`, `Ir` `Left`/`Both[0]` → `value`, and fixes `unit: "Instructions"`. Instruction counts are deterministic and smaller-is-better, so a tight `120%` alert threshold is safe on GitHub-hosted runners.
 
 ### Required secrets
 
@@ -142,6 +173,16 @@ The `scale` bench caps criterion at `sample_size(10)` + short warm-up/measuremen
 The `cve` bench uses the graph parameters from `pyarrowspace/tests/test_8_CVE_db_sweep.py` (`eps=1.31, k=25, topk=15, p=2.0, sigma=0.535`) on clustered 384-feature data mimicking MiniLM embeddings. It is the long pole in CI: one build ≈ 190 s locally (several times that on runners), so the whole `cve` leg takes ~40-60 min; matrix legs run in parallel. `examples/cve_probe.rs` validates graph health for this distribution.
 
 All datasets come from `benches/common/mod.rs`, seeded with **3407**. Changing the seed invalidates every recorded baseline.
+
+### Deterministic gate (iai-callgrind, Linux-only)
+
+`iai_build`, `iai_search`, `iai_spectral` mirror the `build`/`search`/`spectral` criterion benches at the small end of the grid (Valgrind is ~50x slower than native), one group per bench crate. Index build and query preparation run inside each measured function (iai has no per-bench setup exclusion), so a query or spectral bench's count tracks build + primitive; the delta against the matching `iai_build` case isolates the query/primitive cost. iai requires Valgrind, so these benches have a `#[cfg(not(target_os = "linux"))] fn main()` stub to keep `cargo bench --no-run` a portable gate.
+
+- `iai_build`: `ArrowSpaceBuilder::build` at 200×16 and 500×64.
+- `iai_search`: all five query paths at 500×64, k=10.
+- `iai_spectral`: `multiply_vector`, `rayleigh_quotient`, `compute_taumode_lambdas_parallel` (200×16), `build_spectral_laplacian` (500×64).
+
+Follow the same eps-trap and query-pool rules as the criterion benches: `eps=1.5` via `with_lambda_graph`, queries sampled from indexed rows with non-degenerate stored lambdas.
 
 ## Python tooling
 
