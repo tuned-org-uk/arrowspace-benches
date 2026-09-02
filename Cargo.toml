@@ -14,12 +14,13 @@ keywords = ["vector-search", "spectral-analysis", "benchmark", "criterion"]
 categories = ["science"]
 
 [dependencies]
-# CI resolves arrowspace from crates.io (`version = "0.26"` pulls the latest
-# 0.26.x release).
+# CI resolves arrowspace from crates.io (`">=0.26.12"` resolves the latest
+# release, currently 0.27.x; the floor admits the `--precise` pin legs
+# 0.26.12 / 0.26.14 / 0.27.0 in bench.yml).
 #
 # For local dev against a sibling arrowspace-rs checkout, temporarily swap
 # this line for: arrowspace = { path = "../arrowspace-rs" }
-arrowspace = "0.26"
+arrowspace = ">=0.26.12"
 # Dependency versions mirror arrowspace-rs's Cargo.toml so cargo unifies a
 # single version of each across the graph.
 rand = "0.10"

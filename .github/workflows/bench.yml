@@ -11,7 +11,7 @@ name: bench
 #   - workflow_dispatch (manual rerun).
 #
 # One matrix leg per compared arrowspace version: `latest` resolves whatever
-# crates.io serves (currently 0.26.x); the other legs pin exact versions via
+# crates.io serves (currently 0.27.x); the other legs pin exact versions via
 # `cargo update --precise`. Each leg charts its own gh-pages directory;
 # the `compare` job then renders a side-by-side table at gh-pages root.
 on:
@@ -45,12 +45,15 @@ jobs:
           - pin: ""
             chart-dir: dev
             label: latest
+          - pin: 0.27.0
+            chart-dir: dev-v0.27.0
+            label: v0.27.0
+          - pin: 0.26.14
+            chart-dir: dev-v0.26.14
+            label: v0.26.14
           - pin: 0.26.12
             chart-dir: dev-v0.26.12
             label: v0.26.12
-          - pin: 0.26.11
-            chart-dir: dev-v0.26.11
-            label: v0.26.11
     steps:
       - uses: actions/checkout@v4
 
@@ -374,8 +377,9 @@ jobs:
           python3 scripts/make_compare_page.py \
             --out compare-out/index.html \
             "latest=compare-out/criterion-json-latest/criterion.json" \
-            "v0.26.12=compare-out/criterion-json-v0.26.12/criterion.json" \
-            "v0.26.11=compare-out/criterion-json-v0.26.11/criterion.json"
+            "v0.27.0=compare-out/criterion-json-v0.27.0/criterion.json" \
+            "v0.26.14=compare-out/criterion-json-v0.26.14/criterion.json" \
+            "v0.26.12=compare-out/criterion-json-v0.26.12/criterion.json"
 
       - name: Publish comparison page to gh-pages
         run: |
