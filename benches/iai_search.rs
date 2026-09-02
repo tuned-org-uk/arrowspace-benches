@@ -72,7 +72,10 @@ fn build_index() -> Index {
 #[cfg(target_os = "linux")]
 fn prepared_query(idx: &Index) -> ArrowItem {
     let q = &idx.queries[0];
-    let lambda = idx.aspace.prepare_query_item(q, &idx.gl);
+    let lambda = idx
+        .aspace
+        .try_prepare_query_item(q, &idx.gl)
+        .expect("query pool rows are non-degenerate");
     ArrowItem::new(q, lambda)
 }
 
@@ -81,7 +84,10 @@ fn prepared_query(idx: &Index) -> ArrowItem {
 fn bench_search_lambda_aware_k10() {
     let idx = build_index();
     let q = prepared_query(&idx);
-    let hits = idx.aspace.search_lambda_aware(&q, K, ALPHA);
+    let hits = idx
+        .aspace
+        .try_search_lambda_aware(&q, K, ALPHA)
+        .expect("query is prepared and non-degenerate");
     std::hint::black_box(hits.len());
 }
 
@@ -115,7 +121,10 @@ fn bench_search_range() {
 #[library_benchmark]
 fn bench_search_prepare_query_item() {
     let idx = build_index();
-    let lambda = idx.aspace.prepare_query_item(&idx.queries[0], &idx.gl);
+    let lambda = idx
+        .aspace
+        .try_prepare_query_item(&idx.queries[0], &idx.gl)
+        .expect("query pool rows are non-degenerate");
     std::hint::black_box(lambda);
 }
 

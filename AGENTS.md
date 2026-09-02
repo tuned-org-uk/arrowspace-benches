@@ -84,7 +84,7 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 
 ### Cross-version API rule (IMPORTANT)
 
-Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.12/`). Historical gap: `try_prepare_query_item` postdates early 0.26 releases — search benches filter degenerate queries via stored lambdas (`aspace.lambdas()[i].abs() > 1e-12`) instead, which stays valid on every pin.
+Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.12/`). Version gap: `try_prepare_query_item` / `try_search_lambda_aware` are missing from pre-0.26.12 releases. The benches call the `try_` twins with `.expect()` at the call site — sound because query pools are pre-filtered to non-degenerate stored lambdas (present and signature-identical in 0.26.12 / 0.26.14 / 0.27.0 sources). The panicking twins `prepare_query_item` / `search_lambda_aware` are deprecated since 0.27 and denied by CI's warning gate.
 
 To change which versions are compared, edit the `matrix.version` list in bench.yml and the matching chart dirs + `compare` job arguments; keep the oldest pin compiling.
 
@@ -163,7 +163,7 @@ gh workflow run bench.yml --repo tuned-org-uk/arrowspace-benches --ref main
 | Bench | Hot path | Grid |
 |---|---|---|
 | `build` | `ArrowSpaceBuilder::build` | n ∈ {200, 500} × d ∈ {16, 64} |
-| `search` | `search_lambda_aware`, `search_lambda_aware_hybrid`, `search_linear_sorted`, `range_search`, `prepare_query_item` | n=500 × d=64, k ∈ {10, 50} |
+| `search` | `try_search_lambda_aware`, `search_lambda_aware_hybrid`, `search_linear_sorted`, `range_search`, `try_prepare_query_item` | n=500 × d=64, k ∈ {10, 50} |
 | `spectral` | `multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `build_spectral_laplacian` | n=500 × d=64 |
 | `scale` | Full hot-path set at production scale | n=80_000 × d=64, k ∈ {10, 50} |
 | `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20 |

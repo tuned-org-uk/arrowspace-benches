@@ -52,7 +52,10 @@ fn build_index() -> Index {
 
 fn prepared_query(idx: &Index, i: usize) -> ArrowItem {
     let q = &idx.queries[i % idx.queries.len()];
-    let lambda = idx.aspace.prepare_query_item(q, &idx.gl);
+    let lambda = idx
+        .aspace
+        .try_prepare_query_item(q, &idx.gl)
+        .expect("query pool rows are non-degenerate");
     ArrowItem::new(q, lambda)
 }
 
@@ -66,7 +69,11 @@ fn bench_search(c: &mut Criterion) {
             b.iter(|| {
                 let q = prepared_query(&idx, i);
                 i += 1;
-                black_box(idx.aspace.search_lambda_aware(black_box(&q), k, ALPHA));
+                black_box(
+                    idx.aspace
+                        .try_search_lambda_aware(black_box(&q), k, ALPHA)
+                        .expect("query is prepared and non-degenerate"),
+                );
             });
         });
 
@@ -101,12 +108,18 @@ fn bench_search(c: &mut Criterion) {
         });
     });
 
+    // Label kept for chart continuity; measures the fallible try_ twin
+    // (panicking prepare_query_item is deprecated since arrowspace 0.27).
     group.bench_function("prepare_query_item", |b| {
         let mut i = 0usize;
         b.iter(|| {
             let q = &idx.queries[i % QUERY_POOL];
             i += 1;
-            black_box(idx.aspace.prepare_query_item(black_box(q), &idx.gl));
+            black_box(
+                idx.aspace
+                    .try_prepare_query_item(black_box(q), &idx.gl)
+                    .expect("query pool rows are non-degenerate"),
+            );
         });
     });
 

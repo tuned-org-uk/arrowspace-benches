@@ -79,10 +79,16 @@ fn bench_cve(c: &mut Criterion) {
             let mut i = 0usize;
             b.iter(|| {
                 let q = &queries[i % queries.len()];
-                let lambda = aspace.prepare_query_item(q, &gl);
+                let lambda = aspace
+                    .try_prepare_query_item(q, &gl)
+                    .expect("query pool rows are non-degenerate");
                 let item = ArrowItem::new(q, lambda);
                 i += 1;
-                black_box(aspace.search_lambda_aware(black_box(&item), k, ALPHA));
+                black_box(
+                    aspace
+                        .try_search_lambda_aware(black_box(&item), k, ALPHA)
+                        .expect("query is prepared and non-degenerate"),
+                );
             });
         },
     );
@@ -94,7 +100,9 @@ fn bench_cve(c: &mut Criterion) {
             let mut i = 0usize;
             b.iter(|| {
                 let q = &queries[i % queries.len()];
-                let lambda = aspace.prepare_query_item(q, &gl);
+                let lambda = aspace
+                    .try_prepare_query_item(q, &gl)
+                    .expect("query pool rows are non-degenerate");
                 let item = ArrowItem::new(q, lambda);
                 i += 1;
                 black_box(aspace.search_lambda_aware_hybrid(black_box(&item), k, ALPHA));
@@ -119,19 +127,27 @@ fn bench_cve(c: &mut Criterion) {
         let mut i = 0usize;
         b.iter(|| {
             let q = &queries[i % queries.len()];
-            let lambda = aspace.prepare_query_item(q, &gl);
+            let lambda = aspace
+                .try_prepare_query_item(q, &gl)
+                .expect("query pool rows are non-degenerate");
             let item = ArrowItem::new(q, lambda);
             i += 1;
             black_box(aspace.range_search(black_box(&item), &gl, RANGE_EPS));
         });
     });
 
+    // Label kept for chart continuity; measures the fallible try_ twin
+    // (panicking prepare_query_item is deprecated since arrowspace 0.27).
     group.bench_function("prepare_query_item", |b| {
         let mut i = 0usize;
         b.iter(|| {
             let q = &queries[i % queries.len()];
             i += 1;
-            black_box(aspace.prepare_query_item(black_box(q), &gl));
+            black_box(
+                aspace
+                    .try_prepare_query_item(black_box(q), &gl)
+                    .expect("query pool rows are non-degenerate"),
+            );
         });
     });
 
