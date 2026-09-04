@@ -6,7 +6,7 @@ Always use ASD-STE100 Simplified Technical English
 
 ## Project basics
 
-- **What this repo is**: Criterion benchmark harness for [arrowspace-rs](https://github.com/tuned-org-uk/arrowspace-rs). It is *not* arrowspace itself; it pulls a published arrowspace release from crates.io (latest `0.27.x`) and measures the library's three hot paths: index build, query-time search, and spectral primitives.
+- **What this repo is**: Criterion benchmark harness for [arrowspace-rs](https://github.com/tuned-org-uk/arrowspace-rs). It is *not* arrowspace itself; it pulls a published arrowspace release from crates.io (latest `0.28.x`) and measures the library's three hot paths: index build, query-time search, and spectral primitives.
 - **Language / edition**: Rust 2024 (MSRV 1.85), mirroring arrowspace-rs's toolchain.
 - **Repository**: https://github.com/tuned-org-uk/arrowspace-benches
 - **Default branch**: `main`. There is no `development` branch here.
@@ -32,7 +32,7 @@ The `arrowspace` dep resolves from crates.io by default. To bench a local checko
 
 ```toml
 # Default (crates.io):
-arrowspace = ">=0.26.12"
+arrowspace = ">=0.26.14"
 # Local checkout:
 # arrowspace = { path = "../arrowspace-rs" }
 ```
@@ -78,19 +78,19 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 
 | Job | Runner | Tool | Role |
 |---|---|---|---|
-| `criterion` (×4 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.27.x), pinned `0.27.0`, pinned `0.26.14`, pinned `0.26.12`. Advisory, 200% threshold. |
+| `criterion` (×4 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.28.x), pinned `0.28.0`, pinned `0.27.0`, pinned `0.26.14`. Advisory, 200% threshold. |
 | `iai` | ubuntu-latest | iai-callgrind (instruction count) | Deterministic gate. 120% alert threshold, `fail-on-alert: true`. Runs `latest` only (no matrix pinning). Posts a `success`/`failure` status check back to arrowspace-rs. |
 | `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
 
 ### Cross-version API rule (IMPORTANT)
 
-Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.12/`). Version gap: `try_prepare_query_item` / `try_search_lambda_aware` are missing from pre-0.26.12 releases. The benches call the `try_` twins with `.expect()` at the call site — sound because query pools are pre-filtered to non-degenerate stored lambdas (present and signature-identical in 0.26.12 / 0.26.14 / 0.27.0 sources). The panicking twins `prepare_query_item` / `search_lambda_aware` are deprecated since 0.27 and denied by CI's warning gate.
+Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.26.14/`). Version gap: `try_prepare_query_item` / `try_search_lambda_aware` are missing from pre-0.26.12 releases. The benches call the `try_` twins with `.expect()` at the call site — sound because query pools are pre-filtered to non-degenerate stored lambdas (present and signature-identical in 0.26.14 / 0.27.0 / 0.28.0 sources). The panicking twins `prepare_query_item` / `search_lambda_aware` are deprecated since 0.27 and denied by CI's warning gate.
 
 To change which versions are compared, edit the `matrix.version` list in bench.yml and the matching chart dirs + `compare` job arguments; keep the oldest pin compiling.
 
 ### Results persistence
 
-- Trend charts + JSON history → `gh-pages`: criterion `dev/`, `dev-v0.27.0/`, `dev-v0.26.14/`, `dev-v0.26.12/`; iai-callgrind `iai-dev/`.
+- Trend charts + JSON history → `gh-pages`: criterion `dev/`, `dev-v0.28.0/`, `dev-v0.27.0/`, `dev-v0.26.14/`; iai-callgrind `iai-dev/`.
 - Cross-version comparison page → `gh-pages/index.html` (published by the `compare` job).
 - Per-version criterion snapshots → `benches-results/v<arrowspace>/criterion.json` (idempotent; committed to `main`; any leg can be first to record a version).
 
