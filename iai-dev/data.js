@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788526169144,
+  "lastUpdate": 1788533764651,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -696,6 +696,85 @@ window.BENCHMARK_DATA = {
           {
             "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
             "value": 376605770,
+            "unit": "Instructions"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "committer": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "distinct": true,
+          "id": "63641baeae247938667babf41b919172574139ab",
+          "message": "ci: matrix adds v0.28.0 pin, drops v0.26.12; arrowspace req floored to >=0.26.14",
+          "timestamp": "2026-09-04T15:45:47+01:00",
+          "tree_id": "5fbb98c49dd698574dcac21dd716761d223d6718",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/63641baeae247938667babf41b919172574139ab"
+        },
+        "date": 1788533763485,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "iai_build::build::bench_build_200_x_16",
+            "value": 9805256,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_build::build::bench_build_500_x_64",
+            "value": 61040799,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_lambda_aware_k10",
+            "value": 63591448,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_hybrid_k10",
+            "value": 61133339,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_linear_sorted_k10",
+            "value": 61168648,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_range",
+            "value": 62949362,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_prepare_query_item",
+            "value": 61102990,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_multiply_vector",
+            "value": 61037997,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_rayleigh_quotient",
+            "value": 61036048,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_taumode_200_x_16",
+            "value": 9811624,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
+            "value": 61552994,
             "unit": "Instructions"
           }
         ]
