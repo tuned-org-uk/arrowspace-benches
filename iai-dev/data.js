@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791383282305,
+  "lastUpdate": 1791470263511,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -3316,6 +3316,83 @@ window.BENCHMARK_DATA = {
           {
             "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
             "value": 64055226,
+            "unit": "Instructions"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "41898282+github-actions[bot]@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "41898282+github-actions[bot]@users.noreply.github.com"
+          },
+          "id": "ee8a4a9b7521ccf4641beea5e8984aea3f1e062d",
+          "message": "bench(criterion): record v0.28.2 results [skip ci]",
+          "timestamp": "2026-09-21T17:10:12Z",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/ee8a4a9b7521ccf4641beea5e8984aea3f1e062d"
+        },
+        "date": 1791470262598,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "iai_build::build::bench_build_200_x_16",
+            "value": 10428470,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_build::build::bench_build_500_x_64",
+            "value": 63528397,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_lambda_aware_k10",
+            "value": 66177998,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_hybrid_k10",
+            "value": 63599504,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_linear_sorted_k10",
+            "value": 63684533,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_range",
+            "value": 65567726,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_prepare_query_item",
+            "value": 63618576,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_multiply_vector",
+            "value": 63531036,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_rayleigh_quotient",
+            "value": 63526002,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_taumode_200_x_16",
+            "value": 10424735,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
+            "value": 64089447,
             "unit": "Instructions"
           }
         ]
