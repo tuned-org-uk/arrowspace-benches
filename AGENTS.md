@@ -79,6 +79,7 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 | Job | Runner | Tool | Role |
 |---|---|---|---|
 | `criterion` (×4 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.29.x), pinned `0.29.0`, pinned `0.28.0`, pinned `0.27.0`. Advisory, 200% threshold. |
+| `twonn` | ubuntu-latest | criterion | Manual dispatch only: Two-NN selection comparison (arrowspace-rs #199) at CVE scale. Checks out arrowspace-rs at the `arrowspace_ref` input and swaps the dep to that checkout; two passes for same-runner variance. Advisory; not part of the version matrix. |
 | `iai` | ubuntu-latest | iai-callgrind (instruction count) | Deterministic gate. 120% alert threshold, `fail-on-alert: true`. Runs `latest` only (no matrix pinning). Posts a `success`/`failure` status check back to arrowspace-rs. |
 | `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
 
@@ -167,6 +168,7 @@ gh workflow run bench.yml --repo tuned-org-uk/arrowspace-benches --ref main
 | `spectral` | `multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `build_spectral_laplacian` | n=500 × d=64 |
 | `scale` | Full hot-path set at production scale | n=80_000 × d=64, k ∈ {10, 50} |
 | `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20 |
+| `twonn` | Two-NN selection: library `estimate_intrinsic_dimension` vs pre-#199 sort-based reference carried in the bench | n ∈ {2 000, 16 000, 335 462} × d=384 |
 
 The `scale` bench caps criterion at `sample_size(10)` + short warm-up/measurement to keep CI bounded; the "unable to complete 10 samples" notice for `scale/build` is expected (one build ≈ 4 s locally). `examples/scale_probe.rs` times one full-size build and prints graph health before trusting a `scale` result.
 

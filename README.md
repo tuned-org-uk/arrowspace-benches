@@ -41,6 +41,7 @@ All datasets are synthetic clustered vectors in $[0,1]^d$, generated determinist
 | `spectral` | `GraphLaplacian::multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `GraphFactory::build_spectral_laplacian` | n=500 × d=64 |
 | `scale` | Full hot-path set at production scale: build, all search ops, spectral primitives | n=80_000 × d=64, k ∈ {10, 50}, α=0.5 |
 | `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20, α=0.5 |
+| `twonn` | Two-NN selection: library `estimate_intrinsic_dimension` vs the pre-#199 sort-based reference carried in the bench | n ∈ {2 000, 16 000, 335 462} × d=384 |
 
 The `scale` bench runs each group with `sample_size(10)` and capped warm-up/measurement times to keep CI bounded; criterion prints an expected "unable to complete 10 samples" notice for `scale/build` (one iteration ≈ 4 s). `scale_probe` (`cargo run --release --example scale_probe`) times one full-size build and prints graph health stats before you trust any `scale` result.
 
