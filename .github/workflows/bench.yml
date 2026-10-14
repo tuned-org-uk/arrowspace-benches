@@ -23,6 +23,11 @@ on:
     # 07:00 UTC daily
     - cron: "0 7 * * *"
   workflow_dispatch:
+    inputs:
+      arrowspace_ref:
+        description: "arrowspace-rs git ref for the twonn job (branch, tag, or SHA)"
+        required: false
+        default: "main"
 
 # Cancel superseded runs to conserve runner minutes.
 concurrency:
@@ -353,6 +358,66 @@ jobs:
               description: 'iai-callgrind regression detected (>20% on an instruction count)',
               target_url: runUrl,
             });
+
+  # Two-NN selection-strategy comparison (arrowspace-rs #199). Manual
+  # dispatch only (~15 min): the criterion matrix above resolves arrowspace
+  # from crates.io, but this bench must run the candidate side of the
+  # comparison against an arrowspace-rs checkout that contains the change
+  # under test — the sort-based reference lives inside the bench. Two
+  # consecutive passes give same-runner variance. Advisory; artifact holds
+  # both passes' bencher output.
+  twonn:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout arrowspace-rs at ${{ inputs.arrowspace_ref }}
+        uses: actions/checkout@v4
+        with:
+          repository: tuned-org-uk/arrowspace-rs
+          ref: ${{ inputs.arrowspace_ref }}
+          path: arrowspace-rs
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache .cargo and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo
+            ./target
+          key: bench-twonn-${{ inputs.arrowspace_ref }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: bench-twonn-
+
+      # Same swap the README documents for local dev, pointing at the CI
+      # checkout instead of a sibling clone.
+      - name: Point arrowspace dep at the checkout
+        run: |
+          sed -i 's|^arrowspace = ">=0.27"$|arrowspace = { path = "arrowspace-rs" }|' Cargo.toml
+          grep -n '^arrowspace' Cargo.toml
+
+      - name: Build twonn bench (no-run)
+        run: cargo bench --no-run --bench twonn
+
+      - name: Run twonn bench (pass 1)
+        run: |
+          set -o pipefail
+          mkdir -p bench-output
+          cargo bench --bench twonn -- --output-format bencher | tee bench-output/twonn-pass1.json
+
+      - name: Run twonn bench (pass 2)
+        run: |
+          set -o pipefail
+          cargo bench --bench twonn -- --output-format bencher | tee bench-output/twonn-pass2.json
+
+      - name: Upload twonn artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twonn-bencher
+          path: bench-output/twonn-pass*.json
 
   # Render the cross-version comparison page once every leg finished:
   # one row per benchmark, one column per arrowspace version, wall-clock

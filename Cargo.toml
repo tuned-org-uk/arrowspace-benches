@@ -25,6 +25,8 @@ arrowspace = ">=0.27"
 # single version of each across the graph.
 rand = "0.10"
 rand_chacha = "0.10"
+rayon = "1.11"
+smartcore = "0.6.15"
 
 # Bench harness: criterion wall-clock + statistics (local + CI).
 [dependencies.criterion]
@@ -54,6 +56,10 @@ harness = false
 
 [[bench]]
 name = "cve"
+harness = false
+
+[[bench]]
+name = "twonn"
 harness = false
 
 [[bench]]
