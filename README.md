@@ -21,11 +21,11 @@ cargo bench --bench build
 cargo bench
 ```
 
-The `arrowspace` dependency resolves from crates.io (latest 0.26.x) by default — `cargo bench` pulls the published release. To bench a local arrowspace-rs checkout instead, temporarily swap the dep line in `Cargo.toml`:
+The `arrowspace` dependency resolves from crates.io (latest 0.30.x) by default — `cargo bench` pulls the published release. To bench a local arrowspace-rs checkout instead, temporarily swap the dep line in `Cargo.toml`:
 
 ```toml
 # Default (crates.io):
-arrowspace = "0.26"
+arrowspace = "0.30"
 # Local checkout:
 # arrowspace = { path = "../arrowspace-rs" }
 ```
@@ -42,6 +42,7 @@ All datasets are synthetic clustered vectors in $[0,1]^d$, generated determinist
 | `scale` | Full hot-path set at production scale: build, all search ops, spectral primitives | n=80_000 × d=64, k ∈ {10, 50}, α=0.5 |
 | `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20, α=0.5 |
 | `twonn` | Two-NN selection: library `estimate_intrinsic_dimension` vs the pre-#199 sort-based reference carried in the bench | n ∈ {2 000, 16 000, 335 462} × d=384 |
+| `dispersion` | Item dispersion: library CSR fast path vs the pre-#200 dense-lookup fallback (CSC input), inside one binary | n=300 × d=384, topk=15 |
 
 The `scale` bench runs each group with `sample_size(10)` and capped warm-up/measurement times to keep CI bounded; criterion prints an expected "unable to complete 10 samples" notice for `scale/build` (one iteration ≈ 4 s). `scale_probe` (`cargo run --release --example scale_probe`) times one full-size build and prints graph health stats before you trust any `scale` result.
 
@@ -69,9 +70,10 @@ The `criterion` job runs one matrix leg per compared arrowspace version:
 
 | Leg | arrowspace resolution | Trend chart dir |
 |---|---|---|
-| `latest` | crates.io, latest 0.26.x | `dev/` |
-| `v0.26.12` | pinned via `cargo update --precise 0.26.12` | `dev-v0.26.12/` |
-| `v0.26.11` | pinned via `cargo update --precise 0.26.11` | `dev-v0.26.11/` |
+| `latest` | crates.io, latest 0.30.x | `dev/` |
+| `v0.30.0` | pinned via `cargo update --precise 0.30.0` | `dev-v0.30.0/` |
+| `v0.29.0` | pinned via `cargo update --precise 0.29.0` | `dev-v0.29.0/` |
+| `v0.28.0` | pinned via `cargo update --precise 0.28.0` | `dev-v0.28.0/` |
 
 Each leg is advisory (200% alert threshold — wall-clock numbers are noisy on shared runners). A fourth `compare` job runs after all legs and publishes the cross-version table at the gh-pages root.
 

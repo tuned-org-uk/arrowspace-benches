@@ -14,19 +14,20 @@ keywords = ["vector-search", "spectral-analysis", "benchmark", "criterion"]
 categories = ["science"]
 
 [dependencies]
-# CI resolves arrowspace from crates.io (`">=0.27"` resolves the latest
-# release, currently 0.29.x; the floor admits the `--precise` pin legs
-# 0.27.0 / 0.28.0 / 0.29.0 in bench.yml).
+# CI resolves arrowspace from crates.io (`">=0.28"` resolves the latest
+# release, currently 0.30.x; the floor admits the `--precise` pin legs
+# 0.28.0 / 0.29.0 / 0.30.0 in bench.yml).
 #
 # For local dev against a sibling arrowspace-rs checkout, temporarily swap
 # this line for: arrowspace = { path = "../arrowspace-rs" }
-arrowspace = ">=0.27"
+arrowspace = ">=0.28"
 # Dependency versions mirror arrowspace-rs's Cargo.toml so cargo unifies a
 # single version of each across the graph.
 rand = "0.10"
 rand_chacha = "0.10"
 rayon = "1.11"
 smartcore = "0.6.15"
+sprs = "0.11.4"
 
 # Bench harness: criterion wall-clock + statistics (local + CI).
 [dependencies.criterion]
@@ -60,6 +61,10 @@ harness = false
 
 [[bench]]
 name = "twonn"
+harness = false
+
+[[bench]]
+name = "dispersion"
 harness = false
 
 [[bench]]

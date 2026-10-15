@@ -78,20 +78,21 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 
 | Job | Runner | Tool | Role |
 |---|---|---|---|
-| `criterion` (×4 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io 0.29.x), pinned `0.29.0`, pinned `0.28.0`, pinned `0.27.0`. Advisory, 200% threshold. |
+| `criterion` (×4 matrix legs) | ubuntu-latest | criterion (wall-clock) | One leg per compared version: `latest` (crates.io, currently 0.30.x), pinned `0.30.0`, pinned `0.29.0`, pinned `0.28.0`. Advisory, 200% threshold. Runs the full bench set including `twonn` and `dispersion`. |
 | `twonn` | ubuntu-latest | criterion | Manual dispatch only: Two-NN selection comparison (arrowspace-rs #199) at CVE scale. Checks out arrowspace-rs at the `arrowspace_ref` input and swaps the dep to that checkout; two passes for same-runner variance. Advisory; not part of the version matrix. |
-| `iai` | ubuntu-latest | iai-callgrind (instruction count) | Deterministic gate. 120% alert threshold, `fail-on-alert: true`. Runs `latest` only (no matrix pinning). Posts a `success`/`failure` status check back to arrowspace-rs. |
+| `iai` | ubuntu-latest | iai-callgrind + `scripts/iai_gate.py` | Deterministic gate. The gate is a local JSON comparison against the committed `benches-results/iai-baseline.json` (120% growth fails; no network). The `benchmark-action` step only publishes trend history to gh-pages and is `continue-on-error` — it must never own the gate, it crashes when the triggering ref is deleted mid-run. Refresh the baseline deliberately via `workflow_dispatch` input `refresh_iai_baseline`. |
+| `iai` | ubuntu-latest | iai-callgrind (instruction count) | Deterministic gate: local comparison against `benches-results/iai-baseline.json` via `scripts/iai_gate.py` (120% growth fails). Runs `latest` only (no matrix pinning). gh-pages publishing is advisory (`continue-on-error`). Posts a `success`/`failure` status check back to arrowspace-rs. |
 | `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
 
 ### Cross-version API rule (IMPORTANT)
 
-Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.27.0/`). Version gap: `try_prepare_query_item` / `try_search_lambda_aware` are missing from pre-0.26.12 releases. The benches call the `try_` twins with `.expect()` at the call site — sound because query pools are pre-filtered to non-degenerate stored lambdas (present and signature-identical in 0.27.0 / 0.28.0 / 0.29.0 sources). The panicking twins `prepare_query_item` / `search_lambda_aware` are deprecated since 0.27 and denied by CI's warning gate.
+Bench code must compile against **every** matrix pin. Before using an arrowspace API, grep it in the oldest pin's source (`~/.cargo/registry/src/*/arrowspace-0.28.0/`). Version gap: `try_prepare_query_item` / `try_search_lambda_aware` are missing from pre-0.26.12 releases. The benches call the `try_` twins with `.expect()` at the call site — sound because query pools are pre-filtered to non-degenerate stored lambdas (present and signature-identical in 0.28.0 / 0.29.0 / 0.30.0 sources). The panicking twins `prepare_query_item` / `search_lambda_aware` are deprecated since 0.27 and denied by CI's warning gate. Version-specific λ semantics: 0.30.0 bounds the read-out mixing weight (#201); benches that compare λ across pins use fixed `tau ≤ 1`, where the formula is bit-identical in every pin.
 
 To change which versions are compared, edit the `matrix.version` list in bench.yml and the matching chart dirs + `compare` job arguments; keep the oldest pin compiling.
 
 ### Results persistence
 
-- Trend charts + JSON history → `gh-pages`: criterion `dev/`, `dev-v0.29.0/`, `dev-v0.28.0/`, `dev-v0.27.0/`; iai-callgrind `iai-dev/`.
+- Trend charts + JSON history → `gh-pages`: criterion `dev/`, `dev-v0.30.0/`, `dev-v0.29.0/`, `dev-v0.28.0/`; iai-callgrind `iai-dev/`.
 - Cross-version comparison page → `gh-pages/index.html` (published by the `compare` job).
 - Per-version criterion snapshots → `benches-results/v<arrowspace>/criterion.json` (idempotent; committed to `main`; any leg can be first to record a version).
 
@@ -169,6 +170,7 @@ gh workflow run bench.yml --repo tuned-org-uk/arrowspace-benches --ref main
 | `scale` | Full hot-path set at production scale | n=80_000 × d=64, k ∈ {10, 50} |
 | `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20 |
 | `twonn` | Two-NN selection: library `estimate_intrinsic_dimension` vs pre-#199 sort-based reference carried in the bench | n ∈ {2 000, 16 000, 335 462} × d=384 |
+| `dispersion` | Item dispersion: library CSR fast path vs pre-#200 dense-lookup fallback (CSC input), inside one binary | n=300 × d=384, topk=15 |
 
 The `scale` bench caps criterion at `sample_size(10)` + short warm-up/measurement to keep CI bounded; the "unable to complete 10 samples" notice for `scale/build` is expected (one build ≈ 4 s locally). `examples/scale_probe.rs` times one full-size build and prints graph health before trusting a `scale` result.
 

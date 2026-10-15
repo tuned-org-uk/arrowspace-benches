@@ -1,0 +1,57 @@
+[
+  {
+    "name": "iai_build::build::bench_build_200_x_16",
+    "unit": "Instructions",
+    "value": 10409367
+  },
+  {
+    "name": "iai_build::build::bench_build_500_x_64",
+    "unit": "Instructions",
+    "value": 63504146
+  },
+  {
+    "name": "iai_search::search::bench_search_lambda_aware_k10",
+    "unit": "Instructions",
+    "value": 66152792
+  },
+  {
+    "name": "iai_search::search::bench_search_hybrid_k10",
+    "unit": "Instructions",
+    "value": 63576453
+  },
+  {
+    "name": "iai_search::search::bench_search_linear_sorted_k10",
+    "unit": "Instructions",
+    "value": 63636013
+  },
+  {
+    "name": "iai_search::search::bench_search_range",
+    "unit": "Instructions",
+    "value": 65510547
+  },
+  {
+    "name": "iai_search::search::bench_search_prepare_query_item",
+    "unit": "Instructions",
+    "value": 63572337
+  },
+  {
+    "name": "iai_spectral::spectral::bench_spectral_multiply_vector",
+    "unit": "Instructions",
+    "value": 63501196
+  },
+  {
+    "name": "iai_spectral::spectral::bench_spectral_rayleigh_quotient",
+    "unit": "Instructions",
+    "value": 63501746
+  },
+  {
+    "name": "iai_spectral::spectral::bench_spectral_taumode_200_x_16",
+    "unit": "Instructions",
+    "value": 10415165
+  },
+  {
+    "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
+    "unit": "Instructions",
+    "value": 64036058
+  }
+]
