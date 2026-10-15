@@ -28,6 +28,11 @@ on:
         description: "arrowspace-rs git ref for the twonn job (branch, tag, or SHA)"
         required: false
         default: "main"
+      refresh_iai_baseline:
+        description: "Copy this run's iai counts to benches-results/iai-baseline.json and commit"
+        required: false
+        default: false
+        type: boolean
 
 # Cancel superseded runs to conserve runner minutes.
 concurrency:
@@ -50,15 +55,15 @@ jobs:
           - pin: ""
             chart-dir: dev
             label: latest
+          - pin: 0.30.0
+            chart-dir: dev-v0.30.0
+            label: v0.30.0
           - pin: 0.29.0
             chart-dir: dev-v0.29.0
             label: v0.29.0
           - pin: 0.28.0
             chart-dir: dev-v0.28.0
             label: v0.28.0
-          - pin: 0.27.0
-            chart-dir: dev-v0.27.0
-            label: v0.27.0
     steps:
       - uses: actions/checkout@v4
 
@@ -96,6 +101,7 @@ jobs:
           mkdir -p bench-output
           cargo bench \
             --bench build --bench search --bench spectral --bench scale --bench cve \
+            --bench twonn --bench dispersion \
             -- --output-format bencher | tee bench-output/criterion.json
 
       # Persist this leg's results to its own gh-pages subdirectory and
@@ -103,6 +109,7 @@ jobs:
       # JSON directly. Parallel legs can race on the gh-pages ref; the
       # action re-fetches and retries, and a lost point is advisory-only.
       - name: Store + chart benchmark history
+        continue-on-error: true
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: cargo
@@ -285,6 +292,29 @@ jobs:
       - name: Convert iai NDJSON to benchmark-action array
         run: python3 scripts/iai_to_benchmark_action.py bench-output/iai.ndjson bench-output/iai.json
 
+      # Deterministic merge-blocking gate: pure local comparison against
+      # the committed baseline (scripts/iai_gate.py — no network, no GitHub
+      # API). The benchmark-action step below is publish-only: it resolves
+      # the triggering ref through the API and crashes when that ref is
+      # deleted mid-run (PR merged while a dispatched run was executing),
+      # so it must never own the gate.
+      - name: Refresh iai baseline (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_iai_baseline
+        run: |
+          python3 scripts/iai_gate.py bench-output/iai.json benches-results/iai-baseline.json --write-baseline
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B main origin/main
+          python3 scripts/iai_gate.py bench-output/iai.json benches-results/iai-baseline.json --write-baseline
+          git add benches-results/iai-baseline.json
+          git commit -m "bench(iai): refresh instruction-count baseline [skip ci]"
+          git push origin main
+
+      - name: Gate instruction counts vs committed baseline
+        if: (github.event_name == 'workflow_dispatch' && !inputs.refresh_iai_baseline) || github.event_name != 'workflow_dispatch'
+        run: python3 scripts/iai_gate.py bench-output/iai.json benches-results/iai-baseline.json --threshold 1.2
+
       # iai-callgrind emits instruction counts (smaller = better), which
       # benchmark-action's `customSmallerIsBetter` tool shape accepts. The
       # action's v1 API does not have a dedicated `iai-callgrind` tool key,
@@ -292,6 +322,7 @@ jobs:
       # counts are deterministic → a tight threshold is safe, and a >20%
       # regression fails the job (and the status check posted below).
       - name: Store + chart iai benchmark history
+        continue-on-error: true
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: customSmallerIsBetter
@@ -301,7 +332,7 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: iai-dev
           comment-on-alert: true
-          fail-on-alert: true
+          fail-on-alert: false
           alert-threshold: "120%"
 
       - name: Upload iai JSON artifacts
@@ -395,7 +426,7 @@ jobs:
       # checkout instead of a sibling clone.
       - name: Point arrowspace dep at the checkout
         run: |
-          sed -i 's|^arrowspace = ">=0.27"$|arrowspace = { path = "arrowspace-rs" }|' Cargo.toml
+          sed -i 's|^arrowspace = ">=0.28"$|arrowspace = { path = "arrowspace-rs" }|' Cargo.toml
           grep -n '^arrowspace' Cargo.toml
 
       - name: Build twonn bench (no-run)
@@ -442,9 +473,9 @@ jobs:
           python3 scripts/make_compare_page.py \
             --out compare-out/index.html \
             "latest=compare-out/criterion-json-latest/criterion.json" \
+            "v0.30.0=compare-out/criterion-json-v0.30.0/criterion.json" \
             "v0.29.0=compare-out/criterion-json-v0.29.0/criterion.json" \
-            "v0.28.0=compare-out/criterion-json-v0.28.0/criterion.json" \
-            "v0.27.0=compare-out/criterion-json-v0.27.0/criterion.json"
+            "v0.28.0=compare-out/criterion-json-v0.28.0/criterion.json"
 
       - name: Publish comparison page to gh-pages
         run: |
