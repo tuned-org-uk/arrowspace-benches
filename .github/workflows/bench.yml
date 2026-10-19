@@ -473,7 +473,11 @@ jobs:
   # root so https://tuned-org-uk.github.io/arrowspace-benches/ lands here.
   compare:
     needs: criterion
-    if: always() && !cancelled() && !failure()
+    # Runs even when a criterion leg failed or was slow-killed: a dead leg
+    # uploads no artifact, make_compare_page.py drops that input with a
+    # ::warning:: and renders the surviving columns. A partial table beats
+    # a stale one, and a total artifact loss still exits 1 above.
+    if: always() && !cancelled()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

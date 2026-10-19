@@ -82,7 +82,7 @@ Triggers: push to `main`, `repository_dispatch` from arrowspace-rs (`event_type:
 | `twonn` | ubuntu-latest | criterion | Manual dispatch only: Two-NN selection comparison (arrowspace-rs #199) at CVE scale. Checks out arrowspace-rs at the `arrowspace_ref` input and swaps the dep to that checkout; two passes for same-runner variance. Advisory; not part of the version matrix. |
 | `iai` | ubuntu-latest | iai-callgrind + `scripts/iai_gate.py` | Deterministic gate. The gate is a local JSON comparison against the committed `benches-results/iai-baseline.json` (120% growth fails; no network). The `benchmark-action` step only publishes trend history to gh-pages and is `continue-on-error` — it must never own the gate, it crashes when the triggering ref is deleted mid-run. Refresh the baseline deliberately via `workflow_dispatch` input `refresh_iai_baseline`. |
 | `iai` | ubuntu-latest | iai-callgrind (instruction count) | Deterministic gate: local comparison against `benches-results/iai-baseline.json` via `scripts/iai_gate.py` (120% growth fails). Runs `latest` only (no matrix pinning). gh-pages publishing is advisory (`continue-on-error`). Posts a `success`/`failure` status check back to arrowspace-rs. |
-| `compare` | ubuntu-latest | stdlib Python | After all legs: renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. |
+| `compare` | ubuntu-latest | stdlib Python | After all legs (`always() && !cancelled()`): renders the cross-version table to gh-pages root via `scripts/make_compare_page.py`. A leg that died uploads no artifact; the script drops that input with a `::warning::` and renders the surviving columns. Exits 1 only when no input is usable. |
 
 ### Cross-version API rule (IMPORTANT)
 

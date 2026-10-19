@@ -29,8 +29,9 @@ BENCH_LINE = re.compile(
 
 CHART_LINKS = [
     ("latest", "dev/"),
-    ("v0.26.5", "dev-v0.26.5/"),
-    ("v0.26.0", "dev-v0.26.0/"),
+    ("v0.30.0", "dev-v0.30.0/"),
+    ("v0.29.0", "dev-v0.29.0/"),
+    ("v0.28.0", "dev-v0.28.0/"),
 ]
 
 CSS = """
@@ -63,8 +64,38 @@ def parse_bencher(path: Path) -> dict[str, tuple[int, int]]:
         delta = int(m["delta"].replace(",", "")) if m["delta"] else 0
         results[m["name"]] = (value, delta)
     if not results:
-        raise SystemExit(f"{path}: no bencher lines found")
+        raise ValueError(f"{path}: no bencher lines found")
     return results
+
+
+def load_series(
+    pairs: list[str],
+) -> tuple[list[str], list[dict[str, tuple[int, int]]]]:
+    """Parse LABEL=PATH pairs, dropping inputs that are missing or empty.
+
+    A criterion leg that timed out or panicked uploads no artifact; the
+    page must still render from the surviving columns, with gap markers
+    where a bench has no data. Emits a GitHub Actions warning per dropped
+    input so the degradation is visible in the run log.
+    """
+    labels: list[str] = []
+    series: list[dict[str, tuple[int, int]]] = []
+    for pair in pairs:
+        label, sep, path = pair.partition("=")
+        if not sep or not path:
+            raise SystemExit(f"bad series spec {pair!r}: expected LABEL=PATH")
+        p = Path(path)
+        try:
+            data = parse_bencher(p)
+        except (OSError, ValueError) as exc:
+            print(
+                f"::warning::dropped comparison input {label!r}: {exc}",
+                file=sys.stderr,
+            )
+            continue
+        labels.append(label)
+        series.append(data)
+    return labels, series
 
 
 def fmt_ns(ns: int) -> str:
@@ -172,6 +203,17 @@ def self_test(tmp: Path) -> None:
     assert "x1.12" in page, "expected 200000/178000 ratio x1.12"
     assert "&mdash;" in page, "expected gap markers for missing benches"
     assert "only-in-new" in page and "only-in-old" in page
+
+    # A leg that died uploads no artifact: its input file is absent and the
+    # column must be dropped, not crash the render.
+    missing = tmp / "does-not-exist.json"
+    got_labels, got_series = load_series([f"vA={new}", f"vB={missing}"])
+    assert got_labels == ["vA"], got_labels
+    assert len(got_series) == 1
+    page = render(got_labels, got_series)
+    assert "build/builder/200x16" in page
+    assert "x1.10" not in page, "single column must render no ratios"
+
     print(f"self-test OK ({tmp})")
 
 
@@ -199,17 +241,20 @@ def main(argv: list[str]) -> int:
     if len(args.series) < 2:
         ap.error("need at least two LABEL=PATH pairs")
 
-    labels, paths = [], []
-    for pair in args.series:
-        label, sep, path = pair.partition("=")
-        if not sep or not path:
-            ap.error(f"bad series spec {pair!r}: expected LABEL=PATH")
-        labels.append(label)
-        paths.append(Path(path))
+    labels, series = load_series(args.series)
+    if not series:
+        print(
+            "::error::no usable criterion inputs — nothing to render",
+            file=sys.stderr,
+        )
+        return 1
 
-    page = render(labels, [parse_bencher(p) for p in paths])
+    page = render(labels, series)
     Path(args.out).write_text(page)
-    print(f"wrote {args.out} ({len(labels)} versions)")
+    print(
+        f"wrote {args.out} ({len(series)}/{len(args.series)} versions,"
+        f" baseline={labels[0]})"
+    )
     return 0
 
 
