@@ -15,6 +15,12 @@ const N: usize = 300;
 const F: usize = 384;
 const TAU: f64 = 0.5;
 
+fn ulp_distance(a: f64, b: f64) -> u64 {
+    (a.to_bits() as i64)
+        .wrapping_sub(b.to_bits() as i64)
+        .unsigned_abs()
+}
+
 fn build_pair() -> (ArrowSpace, GraphLaplacian) {
     let rows = clustered_rows(N, F, 8);
     // eps=1.5 keeps this distribution's feature graph non-empty (eps trap);
@@ -41,7 +47,16 @@ fn bench_dispersion(c: &mut Criterion) {
 
     let a = TM::compute_synthetic_lambda(&item, None, csr, TAU);
     let b = TM::compute_synthetic_lambda(&item, None, &csc, TAU);
-    assert_eq!(a.to_bits(), b.to_bits(), "CSR and CSC lambda bits diverge");
+    // #170 (arrowspace 0.29+) makes these two calls bit-identical. Pre-#170
+    // pins (0.28.x) drift by ≤1 ULP per call: par_bridge + rayon grouped
+    // sums order f64 addition by thread schedule. A real CSR/CSC path
+    // divergence is a full-precision mismatch, orders of magnitude above
+    // the bound.
+    let ulp = ulp_distance(a, b);
+    assert!(
+        ulp <= 2,
+        "CSR and CSC lambda diverge by {ulp} ULP: a={a} b={b}"
+    );
     assert!(
         a > 0.0,
         "empty/edgeless graph: lambda={a} — check the eps trap"
