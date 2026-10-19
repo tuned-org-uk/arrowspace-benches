@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792325247690,
+  "lastUpdate": 1792389621914,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -4400,6 +4400,85 @@ window.BENCHMARK_DATA = {
           {
             "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
             "value": 61263893,
+            "unit": "Instructions"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "committer": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "distinct": true,
+          "id": "122e1c399d7eecd18cbc984e47acd4fe425380b4",
+          "message": "fix(dispersion): bound CSR/CSC lambda check at 2 ULP instead of bit equality\n\narrowspace 0.28.x orders the Rayleigh quotient's f64 addition by thread\nschedule (par_bridge + rayon grouped sums), so two back-to-back\ncompute_synthetic_lambda calls drift by ~1 ULP and the bit-equality\nassert panicked the v0.28.0 matrix leg (exit 101) after ~2h of green\nbenches. #170 determinism (0.29+) makes the calls bit-identical, so the\nbound is 0 there; a real fast-path divergence is orders of magnitude\nabove the bound, keeping the gate meaningful.",
+          "timestamp": "2026-10-19T06:51:37+01:00",
+          "tree_id": "4437e78e13ec870e20dab09ac80d0aa972a17b84",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/122e1c399d7eecd18cbc984e47acd4fe425380b4"
+        },
+        "date": 1792389621507,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "iai_build::build::bench_build_200_x_16",
+            "value": 9769323,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_build::build::bench_build_500_x_64",
+            "value": 60698754,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_lambda_aware_k10",
+            "value": 63347982,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_hybrid_k10",
+            "value": 60852049,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_linear_sorted_k10",
+            "value": 60854230,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_range",
+            "value": 62729927,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_prepare_query_item",
+            "value": 60845139,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_multiply_vector",
+            "value": 60695596,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_rayleigh_quotient",
+            "value": 60724745,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_taumode_200_x_16",
+            "value": 9772126,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
+            "value": 61259683,
             "unit": "Instructions"
           }
         ]
