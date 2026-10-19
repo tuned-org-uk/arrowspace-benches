@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792389621914,
+  "lastUpdate": 1792391197892,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -4479,6 +4479,85 @@ window.BENCHMARK_DATA = {
           {
             "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
             "value": 61259683,
+            "unit": "Instructions"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "committer": {
+            "email": "tunedconsulting@gmail.com",
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS"
+          },
+          "distinct": true,
+          "id": "05260a1d61d9f00725940432875c1e3acdb5ef6b",
+          "message": "bench(cve): gate >100s/iter cases behind CVE_HEAVY; bound criterion job at 350m\n\nThe 0.29.0 leg hit the 360-minute runner wall on 2026-10-18 after\npassing in 3h36m the day before. cve/taumode_lambdas_parallel measured\n128.9s/iter on that leg and cve/build is worse; with criterion's\n10-sample floor the three heavy cases (build, build_spectral_laplacian,\ntaumode_lambdas_parallel) add >1h per leg, so a 1.7x slow-runner day\nbreaches 6h. The runner ceiling is a hard limit — the only lever is\nnominal wall time.\n\nCVE_HEAVY=1 now rides only on the latest leg (nominal ~2.3h) and on\npinned legs when workflow_dispatch carries cve_heavy=true. Pinned legs\ndrop to ~2.2h nominal; a 1.7x slowdown lands near 3.8h. Case names and\norder are unchanged when heavy runs, so chart continuity is kept.\ntimeout-minutes: 350 contains a runaway leg with a clear failure instead\nof the runner killing the job mid-push.",
+          "timestamp": "2026-10-19T07:14:50+01:00",
+          "tree_id": "87f50ad230c6b506c219c1d80bfe37147a28e7d1",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/05260a1d61d9f00725940432875c1e3acdb5ef6b"
+        },
+        "date": 1792391197006,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "iai_build::build::bench_build_200_x_16",
+            "value": 9769005,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_build::build::bench_build_500_x_64",
+            "value": 60698754,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_lambda_aware_k10",
+            "value": 63345548,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_hybrid_k10",
+            "value": 60882256,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_linear_sorted_k10",
+            "value": 60851614,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_range",
+            "value": 62765223,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_search::search::bench_search_prepare_query_item",
+            "value": 60875766,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_multiply_vector",
+            "value": 60693764,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_rayleigh_quotient",
+            "value": 60726892,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_taumode_200_x_16",
+            "value": 9771904,
+            "unit": "Instructions"
+          },
+          {
+            "name": "iai_spectral::spectral::bench_spectral_build_laplacian_500_x_64",
+            "value": 61289307,
             "unit": "Instructions"
           }
         ]
