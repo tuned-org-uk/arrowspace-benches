@@ -168,13 +168,13 @@ gh workflow run bench.yml --repo tuned-org-uk/arrowspace-benches --ref main
 | `search` | `try_search_lambda_aware`, `search_lambda_aware_hybrid`, `search_linear_sorted`, `range_search`, `try_prepare_query_item` | n=500 × d=64, k ∈ {10, 50} |
 | `spectral` | `multiply_vector`, `rayleigh_quotient`, `TauMode::compute_taumode_lambdas_parallel`, `build_spectral_laplacian` | n=500 × d=64 |
 | `scale` | Full hot-path set at production scale | n=80_000 × d=64, k ∈ {10, 50} |
-| `cve` | CVE-search mimic of the pyarrowspace corpus: full hot-path set | n=300_000 × d=384, k=20 |
+| `cve` | CVE-search mimic of the pyarrowspace corpus: search-path set; three >100 s/iter cases (build, build_spectral_laplacian, taumode_lambdas_parallel) gated behind `CVE_HEAVY=1` | n=300_000 × d=384, k=20 |
 | `twonn` | Two-NN selection: library `estimate_intrinsic_dimension` vs pre-#199 sort-based reference carried in the bench | n ∈ {2 000, 16 000, 335 462} × d=384 |
 | `dispersion` | Item dispersion: library CSR fast path vs pre-#200 dense-lookup fallback (CSC input), inside one binary | n=300 × d=384, topk=15 |
 
 The `scale` bench caps criterion at `sample_size(10)` + short warm-up/measurement to keep CI bounded; the "unable to complete 10 samples" notice for `scale/build` is expected (one build ≈ 4 s locally). `examples/scale_probe.rs` times one full-size build and prints graph health before trusting a `scale` result.
 
-The `cve` bench uses the graph parameters from `pyarrowspace/tests/test_8_CVE_db_sweep.py` (`eps=1.31, k=25, topk=15, p=2.0, sigma=0.535`) on clustered 384-feature data mimicking MiniLM embeddings. It is the long pole in CI: one build ≈ 190 s locally (several times that on runners), so the whole `cve` leg takes ~40-60 min; matrix legs run in parallel. `examples/cve_probe.rs` validates graph health for this distribution.
+The `cve` bench uses the graph parameters from `pyarrowspace/tests/test_8_CVE_db_sweep.py` (`eps=1.31, k=25, topk=15, p=2.0, sigma=0.535`) on clustered 384-feature data mimicking MiniLM embeddings. It is the long pole in CI: one build ≈ 190 s locally (several times that on runners). The three cases above the 100 s/iter mark carry criterion's 10-sample floor, so they add >1 h per leg; since 2026-10 they run only where `CVE_HEAVY=1` — the `latest` leg (nominal wall ~2.3 h) always, pinned legs via the `cve_heavy` workflow_dispatch input. The criterion job holds `timeout-minutes: 350` as containment below the 360-minute GitHub-hosted hard ceiling; a slow runner cannot be engineered away, only bounded. `examples/cve_probe.rs` validates graph health for this distribution.
 
 All datasets come from `benches/common/mod.rs`, seeded with **3407**. Changing the seed invalidates every recorded baseline.
 

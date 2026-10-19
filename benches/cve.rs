@@ -36,6 +36,14 @@ fn probe_vector(d: usize) -> Vec<f64> {
     (0..d).map(|_| rng.random::<f64>()).collect()
 }
 
+// Gates the >100 s/iteration cases (build, build_spectral_laplacian,
+// taumode_lambdas_parallel). With criterion's 10-sample floor they add
+// >1h per leg and pushed pinned legs past the 6h runner wall on slow
+// runners; bench.yml sets CVE_HEAVY=1 where they belong.
+fn cve_heavy_enabled() -> bool {
+    std::env::var("CVE_HEAVY").as_deref() == Ok("1")
+}
+
 fn bench_cve(c: &mut Criterion) {
     let rows = clustered_rows(N, D, CLUSTERS);
     let (mut aspace, gl) = builder().build(rows.clone());
@@ -57,20 +65,23 @@ fn bench_cve(c: &mut Criterion) {
     group.warm_up_time(Duration::from_secs(1));
     group.measurement_time(Duration::from_secs(5));
 
-    group.bench_with_input(
-        BenchmarkId::new("build", format!("{}x{}", N, D)),
-        &rows,
-        |b, rows| {
-            b.iter_batched(
-                || rows.clone(),
-                |rows| {
-                    let (aspace, gl) = builder().build(rows);
-                    black_box((aspace.lambdas().len(), gl.nnz()));
-                },
-                BatchSize::LargeInput,
-            );
-        },
-    );
+    let heavy = cve_heavy_enabled();
+    if heavy {
+        group.bench_with_input(
+            BenchmarkId::new("build", format!("{}x{}", N, D)),
+            &rows,
+            |b, rows| {
+                b.iter_batched(
+                    || rows.clone(),
+                    |rows| {
+                        let (aspace, gl) = builder().build(rows);
+                        black_box((aspace.lambdas().len(), gl.nnz()));
+                    },
+                    BatchSize::LargeInput,
+                );
+            },
+        );
+    }
 
     group.bench_with_input(
         BenchmarkId::new("lambda_aware", K_RESULTS),
@@ -162,27 +173,29 @@ fn bench_cve(c: &mut Criterion) {
     // Both primitives overwrite their outputs in place (update_lambdas /
     // aspace.signals), so they bench on the fixed index without a
     // per-iteration rebuild.
-    group.bench_function(
-        BenchmarkId::new("build_spectral_laplacian", format!("{}x{}", N, D)),
-        |b| {
-            b.iter(|| {
-                GraphFactory::build_spectral_laplacian(black_box(&mut aspace), black_box(&gl));
-            });
-        },
-    );
+    if heavy {
+        group.bench_function(
+            BenchmarkId::new("build_spectral_laplacian", format!("{}x{}", N, D)),
+            |b| {
+                b.iter(|| {
+                    GraphFactory::build_spectral_laplacian(black_box(&mut aspace), black_box(&gl));
+                });
+            },
+        );
 
-    group.bench_function(
-        BenchmarkId::new("taumode_lambdas_parallel", format!("{}x{}", N, D)),
-        |b| {
-            b.iter(|| {
-                TauMode::compute_taumode_lambdas_parallel(
-                    black_box(&mut aspace),
-                    black_box(&gl),
-                    TauMode::Median,
-                );
-            });
-        },
-    );
+        group.bench_function(
+            BenchmarkId::new("taumode_lambdas_parallel", format!("{}x{}", N, D)),
+            |b| {
+                b.iter(|| {
+                    TauMode::compute_taumode_lambdas_parallel(
+                        black_box(&mut aspace),
+                        black_box(&gl),
+                        TauMode::Median,
+                    );
+                });
+            },
+        );
+    }
 
     group.finish();
 }

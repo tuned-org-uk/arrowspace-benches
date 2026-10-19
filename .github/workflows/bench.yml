@@ -33,6 +33,11 @@ on:
         required: false
         default: false
         type: boolean
+      cve_heavy:
+        description: "Run the >100s/iter cve cases (build, build_spectral_laplacian, taumode_lambdas_parallel) on pinned legs too"
+        required: false
+        default: false
+        type: boolean
 
 # Cancel superseded runs to conserve runner minutes.
 concurrency:
@@ -48,6 +53,10 @@ permissions:
 jobs:
   criterion:
     runs-on: ubuntu-latest
+    # Deterministic containment below the 360-minute GitHub-hosted hard
+    # ceiling: a runaway leg fails with a clear timeout instead of being
+    # killed mid-push by the runner wall.
+    timeout-minutes: 350
     strategy:
       fail-fast: false
       matrix:
@@ -95,7 +104,15 @@ jobs:
       # bench in the format benchmark-action/github-action-benchmark expects
       # for tool=cargo. pipefail makes a bench failure fail the step instead
       # of hiding behind tee's exit code.
+      #
+      # CVE_HEAVY gates the >100s/iter cve cases (see benches/cve.rs): on by
+      # default only for the `latest` leg (its nominal wall is ~2.3h, safe
+      # under the timeout even on slow runners); pinned legs opt in via the
+      # workflow_dispatch input, keeping a pinned leg's worst case well
+      # under the timeout that the 2026-10-18 run of the 0.29.0 leg hit.
       - name: Run criterion benchmarks
+        env:
+          CVE_HEAVY: ${{ (matrix.version.pin == '' || (github.event_name == 'workflow_dispatch' && inputs.cve_heavy)) && '1' || '' }}
         run: |
           set -o pipefail
           mkdir -p bench-output
