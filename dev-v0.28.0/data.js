@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792600772832,
+  "lastUpdate": 1792683977905,
   "repoUrl": "https://github.com/tuned-org-uk/arrowspace-benches",
   "entries": {
     "Benchmark": [
@@ -13099,6 +13099,304 @@ window.BENCHMARK_DATA = {
             "name": "twonn_selection/n335k/estimate_intrinsic_dimension/library",
             "value": 411036844223,
             "range": "± 8751695042",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS",
+            "email": "tunedconsulting@gmail.com"
+          },
+          "committer": {
+            "name": "Lorenzo (Mec-iS)",
+            "username": "Mec-iS",
+            "email": "tunedconsulting@gmail.com"
+          },
+          "id": "c0e69f5f7c51bfa699d3c52cd7d038ff9ccfaf61",
+          "message": "ci(compare): publish with gaps when a leg's artifact is missing\n\nA criterion leg that panics or slow-times-out uploads no criterion.json,\nand the old !failure() guard plus parse_bencher's hard exit made the\ncompare job fail on the missing file — so a partial leg took the\ncomparison page down with it. compare now runs on always() && !cancelled()\nand make_compare_page.py drops missing/unreadable inputs with a\n::warning:: per leg, rendering the surviving columns with gap markers\n(the render already drew those for benches missing from one column).\nExit 1 only when no input is usable at all.\n\nDrive-by: CHART_LINKS pointed at dead dev-v0.26.x chart dirs; now lists\nthe four live ones.",
+          "timestamp": "2026-10-19T06:47:58Z",
+          "url": "https://github.com/tuned-org-uk/arrowspace-benches/commit/c0e69f5f7c51bfa699d3c52cd7d038ff9ccfaf61"
+        },
+        "date": 1792683977181,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "build/builder/200x16",
+            "value": 14014243,
+            "range": "± 891451",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/200x64",
+            "value": 42864157,
+            "range": "± 503796",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/500x16",
+            "value": 66746812,
+            "range": "± 1174004",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "build/builder/500x64",
+            "value": 191048180,
+            "range": "± 11371115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/lambda_aware/20",
+            "value": 840042135,
+            "range": "± 41837449",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/hybrid/20",
+            "value": 280503198,
+            "range": "± 591241",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/linear_sorted/20",
+            "value": 3215512,
+            "range": "± 85215",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/range_search",
+            "value": 489706834,
+            "range": "± 3405884",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/prepare_query_item",
+            "value": 1667911,
+            "range": "± 7491",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/multiply_vector",
+            "value": 4370,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "cve/rayleigh_quotient",
+            "value": 5062,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dispersion/compute_synthetic_lambda/sparse_csr_path",
+            "value": 1582494,
+            "range": "± 90383",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "dispersion/compute_synthetic_lambda/dense_lookup_path",
+            "value": 1821248,
+            "range": "± 24709",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "taumode_readout/300x384_topk15",
+            "value": 189409018,
+            "range": "± 5314515",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/build/80000x64",
+            "value": 13654069976,
+            "range": "± 160494929",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/lambda_aware/10",
+            "value": 36934283,
+            "range": "± 208788",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/hybrid/10",
+            "value": 13570237,
+            "range": "± 35670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/linear_sorted/10",
+            "value": 292991,
+            "range": "± 8642",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/lambda_aware/50",
+            "value": 36774323,
+            "range": "± 341767",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/hybrid/50",
+            "value": 13758900,
+            "range": "± 1325862",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/linear_sorted/50",
+            "value": 271984,
+            "range": "± 10237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/range_search",
+            "value": 21756609,
+            "range": "± 604869",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/prepare_query_item",
+            "value": 87412,
+            "range": "± 626",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/multiply_vector",
+            "value": 434,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/rayleigh_quotient",
+            "value": 490,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/build_spectral_laplacian/80000x64",
+            "value": 997333,
+            "range": "± 5559",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "scale/taumode_lambdas_parallel/80000x64",
+            "value": 1424303919,
+            "range": "± 2264679",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/lambda_aware/10",
+            "value": 341602,
+            "range": "± 6240",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/hybrid/10",
+            "value": 208579,
+            "range": "± 3203",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/linear_sorted/10",
+            "value": 89883,
+            "range": "± 1621",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/lambda_aware/50",
+            "value": 340544,
+            "range": "± 7595",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/hybrid/50",
+            "value": 222425,
+            "range": "± 1741",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/linear_sorted/50",
+            "value": 88789,
+            "range": "± 5850",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/range_search",
+            "value": 252887,
+            "range": "± 7152",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "search/prepare_query_item",
+            "value": 86649,
+            "range": "± 1105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/multiply_vector",
+            "value": 428,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/rayleigh_quotient",
+            "value": 489,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/taumode_lambdas_parallel/200x16",
+            "value": 339907,
+            "range": "± 11326",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/taumode_lambdas_parallel/500x64",
+            "value": 9438416,
+            "range": "± 637080",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "spectral/build_spectral_laplacian",
+            "value": 1167092,
+            "range": "± 47452",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "twonn_selection/n2000/estimate_intrinsic_dimension/baseline_sort",
+            "value": 1085980401,
+            "range": "± 50675718",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "twonn_selection/n2000/estimate_intrinsic_dimension/library",
+            "value": 1072689645,
+            "range": "± 40925922",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "twonn_selection/n16000/estimate_intrinsic_dimension/baseline_sort",
+            "value": 9560370406,
+            "range": "± 175642672",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "twonn_selection/n16000/estimate_intrinsic_dimension/library",
+            "value": 9586023038,
+            "range": "± 189292087",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "twonn_selection/n335k/estimate_intrinsic_dimension/baseline_sort",
+            "value": 285527842309,
+            "range": "± 2496203992",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "twonn_selection/n335k/estimate_intrinsic_dimension/library",
+            "value": 282347496433,
+            "range": "± 2722044459",
             "unit": "ns/iter"
           }
         ]
